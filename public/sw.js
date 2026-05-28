@@ -18,6 +18,9 @@ self.addEventListener("install", (event) => {
 })
 
 self.addEventListener("fetch", (event) => {
+  if (event.request.method !== "GET") return
+  if (event.request.url.includes("googleapis.com")) return
+
   event.respondWith(
     caches.match(event.request).then((cached) => {
       const fetchPromise = fetch(event.request).then((response) => {
