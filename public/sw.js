@@ -1,10 +1,14 @@
+self.importScripts()
+
 const CACHE = "calorias-v1"
 
+const BASE = "/calorie_counter"
+
 const assets = [
-  "/",
-  "/manifest.json",
-  "/icon-192.png",
-  "/icon-512.png",
+  `${BASE}/`,
+  `${BASE}/manifest.json`,
+  `${BASE}/icon-192.png`,
+  `${BASE}/icon-512.png`,
 ]
 
 self.addEventListener("install", (event) => {

@@ -30,7 +30,8 @@ jobs:
         env:
           CI: true
 
-      - run: cp public/*.json public/*.js public/*.html public/*.png dist/
+      - name: Copy PWA files to dist
+        run: cp -r public/* dist/
 
       - uses: actions/upload-pages-artifact@v3
         with:

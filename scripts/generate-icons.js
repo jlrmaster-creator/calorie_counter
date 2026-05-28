@@ -108,6 +108,20 @@ async function generate() {
     .png()
     .toFile(path.join(ASSETS, "favicon.png"))
   console.log("favicon.png generated")
+
+  // PWA icons
+  const PUBLIC = path.join(__dirname, "..", "public")
+  await sharp(iconSvg)
+    .resize(192, 192)
+    .png()
+    .toFile(path.join(PUBLIC, "icon-192.png"))
+  console.log("icon-192.png generated")
+
+  await sharp(iconSvg)
+    .resize(512, 512)
+    .png()
+    .toFile(path.join(PUBLIC, "icon-512.png"))
+  console.log("icon-512.png generated")
 }
 
 generate().catch(console.error)
