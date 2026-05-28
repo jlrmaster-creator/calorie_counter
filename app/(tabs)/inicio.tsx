@@ -5,7 +5,6 @@ import {
   FlatList,
   ActivityIndicator,
   StyleSheet,
-  Alert,
   RefreshControl,
 } from "react-native"
 import { useStore, calcularTotalCalorias } from "../../src/store/useStore"
@@ -116,16 +115,7 @@ export default function InicioScreen() {
               setComidaEditar(item)
               setModalVisible(true)
             }}
-            onEliminar={() => {
-              Alert.alert(
-                "Confirmar",
-                "¿Seguro que quieres eliminar esta comida?",
-                [
-                  { text: "Cancelar", style: "cancel" },
-                  { text: "Eliminar", style: "destructive", onPress: () => borrarComida(user!.uid, item.id) },
-                ]
-              )
-            }}
+            onEliminar={() => borrarComida(user!.uid, item.id)}
           />
         )}
         ListEmptyComponent={
