@@ -34,9 +34,10 @@ jobs:
           CI: true
           EXPO_BASE_URL: calorie_counter
 
-      - name: Inject PWA tags into index.html
+      - name: Inject PWA tags and service worker into index.html
         run: |
           sed -i 's|</title>|</title>\n    <link rel="manifest" href="/calorie_counter/manifest.json" />\n    <link rel="apple-touch-icon" href="/calorie_counter/icon-192.png" />\n    <meta name="apple-mobile-web-app-capable" content="yes" />\n    <meta name="apple-mobile-web-app-status-bar-style" content="default" />\n    <meta name="apple-mobile-web-app-title" content="Calorías" />|' dist/index.html
+          sed -i 's|</body>|<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("/calorie_counter/sw.js")})}</script>\n</body>|' dist/index.html
 
       - name: Copy PWA files
         run: cp -r public/* dist/
