@@ -30,18 +30,13 @@ jobs:
         env:
           CI: true
           EXPO_ROUTER_BASE: /calorie_counter
-          EXPO_PUBLIC_URL: /calorie_counter
 
-      - name: Fix all absolute paths for GitHub Pages subpath
+      - name: Fix asset paths for GitHub Pages subpath
         run: |
-          echo "=== Files in dist before fix ==="
-          find dist -type f | head -30
-          echo ""
-          echo "=== Paths in index.html before fix ==="
-          grep -oE '(src|href)="/[^"]+' dist/index.html || true
+          echo "=== Before fix ==="
+          grep -oE '(src|href)="/[^"]+' dist/index.html || echo "no matches"
           echo ""
 
-          # Fix in all HTML files
           find dist -name "*.html" -exec sed -i \
             -e 's|href="/_expo|href="/calorie_counter/_expo|g' \
             -e 's|src="/_expo|src="/calorie_counter/_expo|g' \
@@ -49,24 +44,15 @@ jobs:
             -e 's|href="/icon-|href="/calorie_counter/icon-|g' \
             {} +
 
-          # Fix in all CSS files
           find dist -name "*.css" -exec sed -i \
             -e 's|url(/_expo|url(/calorie_counter/_expo|g' \
             {} +
 
-          echo "=== Paths in index.html after fix ==="
-          grep -oE '(src|href)="/[^"]+' dist/index.html || true
+          echo "=== After fix ==="
+          grep -oE '(src|href)="/[^"]+' dist/index.html || echo "no matches"
 
       - name: Copy PWA files
         run: cp -r public/* dist/
-
-      - name: Verify files
-        run: |
-          echo "=== dist/ contents ==="
-          ls -la dist/
-          echo ""
-          echo "=== Has index.html? ==="
-          test -f dist/index.html && echo "YES" || echo "NO"
 
       - uses: actions/upload-pages-artifact@v3
         with:
