@@ -1,5 +1,5 @@
-import { Link, Stack } from "expo-router"
-import { StyleSheet, View, Text } from "react-native"
+import { Stack } from "expo-router"
+import { StyleSheet, View, Text, Pressable } from "react-native"
 
 export default function NotFoundScreen() {
   return (
@@ -7,9 +7,14 @@ export default function NotFoundScreen() {
       <Stack.Screen options={{ title: "Oops!" }} />
       <View style={styles.container}>
         <Text style={styles.title}>Esta pantalla no existe.</Text>
-        <Link href="/calorie_counter/" style={styles.link}>
+        <Pressable
+          style={styles.link}
+          onPress={() => {
+            window.location.href = "/calorie_counter/"
+          }}
+        >
           <Text style={styles.linkText}>Ir al inicio</Text>
-        </Link>
+        </Pressable>
       </View>
     </>
   )
