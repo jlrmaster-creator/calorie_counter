@@ -37,10 +37,15 @@ jobs:
       - name: Inject PWA tags and service worker into index.html
         run: |
           sed -i 's|</title>|</title>\n    <link rel="manifest" href="/calorie_counter/manifest.json" />\n    <link rel="apple-touch-icon" href="/calorie_counter/icon-192.png" />\n    <meta name="apple-mobile-web-app-capable" content="yes" />\n    <meta name="apple-mobile-web-app-status-bar-style" content="default" />\n    <meta name="apple-mobile-web-app-title" content="Calorías" />|' dist/index.html
-          sed -i 's|</body>|<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("/calorie_counter/sw.js")})}</script>\n</body>|' dist/index.html
+          HASH="${GITHUB_SHA:0:7}"
+          sed -i 's|</body>|<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>{navigator.serviceWorker.register("/calorie_counter/sw.js?v='${HASH}'")})}</script>\n</body>|' dist/index.html
 
-      - name: Copy PWA files
-        run: cp -r public/* dist/
+      - name: Copy PWA files and version SW
+        run: |
+          cp -r public/* dist/
+          HASH="${GITHUB_SHA:0:7}"
+          VERSION=$(node -p "require('./package.json').version")
+          echo "// build: v${VERSION}-${HASH}" >> dist/sw.js
 
       - uses: actions/upload-pages-artifact@v3
         with:
