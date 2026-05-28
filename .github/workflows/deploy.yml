@@ -34,33 +34,6 @@ jobs:
           CI: true
           EXPO_BASE_URL: calorie_counter
 
-      - name: Inject router base path into JS bundle
-        run: |
-          echo "=== Before injection ==="
-          grep -rn "EXPO_BASE_URL\|process\.env" dist/ || echo "No references found"
-
-          # Replace process.env.NODE_ENV with "production" (belt and suspenders)
-          find dist -name "*.js" -exec sed -i \
-            's|process\.env\.NODE_ENV|"production"|g' {} +
-
-          # Replace process.env.EXPO_BASE_URL with the base path string
-          find dist -name "*.js" -exec sed -i \
-            's|process\.env\.EXPO_BASE_URL|"calorie_counter"|g' {} +
-
-          echo "=== After injection ==="
-          grep -rn "calorie_counter\|EXPO_BASE_URL\|NODE_ENV" dist/ | grep -v node_modules | head -20
-
-      - name: Fix asset paths for GitHub Pages subpath
-        run: |
-          find dist -name "*.html" -exec sed -i \
-            -e 's|href="/_expo|href="/calorie_counter/_expo|g' \
-            -e 's|src="/_expo|src="/calorie_counter/_expo|g' \
-            {} +
-
-          find dist -name "*.css" -exec sed -i \
-            -e 's|url(/_expo|url(/calorie_counter/_expo|g' \
-            {} +
-
       - name: Copy PWA files
         run: cp -r public/* dist/
 

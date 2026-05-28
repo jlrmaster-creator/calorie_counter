@@ -38,12 +38,7 @@
       }
     },
     "plugins": [
-      [
-        "expo-router",
-        {
-          "base": "/calorie_counter/"
-        }
-      ],
+      "expo-router",
       [
         "expo-splash-screen",
         {
@@ -54,6 +49,7 @@
       ]
     ],
     "experiments": {
+      "baseUrl": "/calorie_counter/",
       "typedRoutes": true
     }
   }
