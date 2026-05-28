@@ -16,12 +16,15 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
 
       - run: npm ci
@@ -29,18 +32,23 @@ jobs:
       - run: npx expo export --platform web
         env:
           CI: true
+          EXPO_BASE_URL: calorie_counter
 
       - name: Inject router base path into JS bundle
         run: |
           echo "=== Before injection ==="
-          grep -rl "EXPO_ROUTER_BASE" dist/ || echo "No EXPO_ROUTER_BASE references found"
+          grep -rn "EXPO_BASE_URL\|process\.env" dist/ || echo "No references found"
 
-          # Replace process.env.EXPO_ROUTER_BASE with string literal in all JS files
+          # Replace process.env.NODE_ENV with "production" (belt and suspenders)
           find dist -name "*.js" -exec sed -i \
-            's|process\.env\.EXPO_ROUTER_BASE|"/calorie_counter"|g' {} +
+            's|process\.env\.NODE_ENV|"production"|g' {} +
+
+          # Replace process.env.EXPO_BASE_URL with the base path string
+          find dist -name "*.js" -exec sed -i \
+            's|process\.env\.EXPO_BASE_URL|"calorie_counter"|g' {} +
 
           echo "=== After injection ==="
-          grep -rl "calorie_counter" dist/ | head -10
+          grep -rn "calorie_counter\|EXPO_BASE_URL\|NODE_ENV" dist/ | grep -v node_modules | head -20
 
       - name: Fix asset paths for GitHub Pages subpath
         run: |
