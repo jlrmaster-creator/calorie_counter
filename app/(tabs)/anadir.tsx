@@ -20,7 +20,6 @@ export default function AnadirScreen() {
   const [calorias, setCalorias] = useState("")
   const [guardando, setGuardando] = useState(false)
   const anadirComida = useStore((s) => s.anadirComida)
-  const modoOscuro = useStore((s) => s.modoOscuro)
 
   async function handleGuardar() {
     const kcal = parseInt(calorias, 10)
@@ -44,18 +43,18 @@ export default function AnadirScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.contenedor, modoOscuro && styles.oscuro]}
+      style={styles.contenedor}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <View style={styles.contenido}>
-        <Text style={[styles.titulo, modoOscuro && styles.textoOscuro]}>
+        <Text style={styles.titulo}>
           ¿Qué has comido?
         </Text>
 
         <SelectorComida seleccionado={tipo} onSeleccionar={setTipo} />
 
         <TextInput
-          style={[styles.input, modoOscuro && styles.inputOscuro]}
+          style={styles.input}
           placeholder="Calorías"
           placeholderTextColor="#94a3b8"
           value={calorias}
@@ -83,9 +82,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f8fafc",
   },
-  oscuro: {
-    backgroundColor: "#0f172a",
-  },
   contenido: {
     padding: 24,
     gap: 24,
@@ -95,9 +91,6 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     color: "#1e293b",
     textAlign: "center",
-  },
-  textoOscuro: {
-    color: "#f1f5f9",
   },
   input: {
     height: 60,
@@ -110,11 +103,6 @@ const styles = StyleSheet.create({
     color: "#1e293b",
     backgroundColor: "#fff",
     textAlign: "center",
-  },
-  inputOscuro: {
-    backgroundColor: "#1e293b",
-    borderColor: "#334155",
-    color: "#f1f5f9",
   },
   boton: {
     height: 54,

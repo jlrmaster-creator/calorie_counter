@@ -1,7 +1,5 @@
 import { Tabs } from "expo-router"
-import { Text, Platform } from "react-native"
-import { useStore } from "../../src/store/useStore"
-import { useEffect } from "react"
+import { Text } from "react-native"
 
 const iconos: Record<string, string> = {
   inicio: "📊",
@@ -11,22 +9,15 @@ const iconos: Record<string, string> = {
 }
 
 export default function TabLayout() {
-  const modoOscuro = useStore((s) => s.modoOscuro)
-  const cargarPreferencias = useStore((s) => s.cargarPreferencias)
-
-  useEffect(() => {
-    cargarPreferencias()
-  }, [])
-
   return (
     <Tabs
       screenOptions={{
         headerStyle: {
-          backgroundColor: modoOscuro ? "#1e293b" : "#fff",
+          backgroundColor: "#fff",
         },
-        headerTintColor: modoOscuro ? "#f1f5f9" : "#1e293b",
+        headerTintColor: "#1e293b",
         tabBarStyle: {
-          backgroundColor: modoOscuro ? "#1e293b" : "#fff",
+          backgroundColor: "#fff",
         },
         tabBarActiveTintColor: "#3b82f6",
         tabBarInactiveTintColor: "#94a3b8",

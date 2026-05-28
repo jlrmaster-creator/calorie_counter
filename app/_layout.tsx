@@ -4,7 +4,6 @@ import { StatusBar } from "expo-status-bar"
 import { View, Pressable, Text, StyleSheet, Platform } from "react-native"
 import { onAuthStateChanged, signOut } from "firebase/auth"
 import { auth } from "../src/config/firebase"
-import { useStore } from "../src/store/useStore"
 
 export { ErrorBoundary } from "expo-router"
 
@@ -14,18 +13,15 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   const [logueado, setLogueado] = useState(false)
-  const modoOscuro = useStore((s) => s.modoOscuro)
-  const cargarPreferencias = useStore((s) => s.cargarPreferencias)
 
   useEffect(() => {
-    cargarPreferencias()
     const unsub = onAuthStateChanged(auth, (user) => setLogueado(!!user))
     return unsub
   }, [])
 
   return (
     <>
-      <StatusBar style={modoOscuro ? "light" : "dark"} />
+      <StatusBar style="dark" />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="(auth)" />

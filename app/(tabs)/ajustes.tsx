@@ -18,9 +18,6 @@ export default function AjustesScreen() {
   const usuario = useStore((s) => s.usuario)
   const cambiarObjetivo = useStore((s) => s.cambiarObjetivo)
   const cambiarDieta = useStore((s) => s.cambiarDieta)
-  const modoOscuro = useStore((s) => s.modoOscuro)
-  const toggleModoOscuro = useStore((s) => s.toggleModoOscuro)
-
   const [objetivoInput, setObjetivoInput] = useState(
     String(usuario?.objetivoCalorias || 2000)
   )
@@ -57,14 +54,14 @@ export default function AjustesScreen() {
 
   return (
     <ScrollView
-      style={[styles.contenedor, modoOscuro && styles.oscuro]}
+      style={styles.contenedor}
       contentContainerStyle={styles.contenido}
     >
-      <Text style={[styles.titulo, modoOscuro && styles.textoOscuro]}>
+      <Text style={styles.titulo}>
         Objetivo diario
       </Text>
       <TextInput
-        style={[styles.input, modoOscuro && styles.inputOscuro]}
+        style={styles.input}
         value={objetivoInput}
         onChangeText={setObjetivoInput}
         keyboardType="number-pad"
@@ -74,17 +71,16 @@ export default function AjustesScreen() {
         <Text style={styles.textoBoton}>Guardar objetivo</Text>
       </Pressable>
 
-      <Text style={[styles.titulo, modoOscuro && styles.textoOscuro, { marginTop: 24 }]}>
+      <Text style={[styles.titulo, { marginTop: 24 }]}>
         Tipo de dieta
       </Text>
-      <Text style={[styles.descripcion, modoOscuro && styles.textoOscuroSecundario]}>
+      <Text style={styles.descripcion}>
         Selecciona una dieta para ajustar el objetivo automáticamente
       </Text>
       <Pressable
         style={[
           styles.opcionDieta,
           !usuario?.tipoDieta && styles.opcionDietaActiva,
-          modoOscuro && styles.opcionDietaOscura,
         ]}
         onPress={() => handleCambiarDieta(null)}
       >
@@ -92,7 +88,6 @@ export default function AjustesScreen() {
           style={[
             styles.textoOpcionDieta,
             !usuario?.tipoDieta && styles.textoOpcionActiva,
-            modoOscuro && styles.textoOscuro,
           ]}
         >
           Sin dieta específica
@@ -106,7 +101,6 @@ export default function AjustesScreen() {
             style={[
               styles.opcionDieta,
               activa && styles.opcionDietaActiva,
-              modoOscuro && styles.opcionDietaOscura,
             ]}
             onPress={() => handleCambiarDieta(dieta.id)}
           >
@@ -115,7 +109,6 @@ export default function AjustesScreen() {
                 style={[
                   styles.textoOpcionDieta,
                   activa && styles.textoOpcionActiva,
-                  modoOscuro && styles.textoOscuro,
                 ]}
               >
                 {dieta.nombre}
@@ -124,7 +117,6 @@ export default function AjustesScreen() {
                 style={[
                   styles.descripcionDieta,
                   activa && styles.textoOpcionActiva,
-                  modoOscuro && styles.textoOscuroSecundario,
                 ]}
               >
                 {dieta.descripcion} · {dieta.rangoCalorico[0]}-{dieta.rangoCalorico[1]} kcal
@@ -136,31 +128,7 @@ export default function AjustesScreen() {
 
       <View style={styles.separador} />
 
-      <Text style={[styles.titulo, modoOscuro && styles.textoOscuro]}>
-        Apariencia
-      </Text>
-      <Pressable style={styles.filaAjuste} onPress={toggleModoOscuro}>
-        <Text style={[styles.textoAjuste, modoOscuro && styles.textoOscuro]}>
-          Modo oscuro
-        </Text>
-        <View
-          style={[
-            styles.toggle,
-            modoOscuro && styles.toggleActivo,
-          ]}
-        >
-          <View
-            style={[
-              styles.toggleCirculo,
-              modoOscuro && styles.toggleCirculoActivo,
-            ]}
-          />
-        </View>
-      </Pressable>
-
-      <View style={styles.separador} />
-
-      <Text style={[styles.email, modoOscuro && styles.textoOscuroSecundario]}>
+      <Text style={styles.email}>
         {usuario?.email}
       </Text>
       <Pressable style={styles.botonCerrarSesion} onPress={handleCerrarSesion}>
@@ -174,9 +142,6 @@ const styles = StyleSheet.create({
   contenedor: {
     flex: 1,
     backgroundColor: "#f8fafc",
-  },
-  oscuro: {
-    backgroundColor: "#0f172a",
   },
   contenido: {
     padding: 24,
@@ -192,12 +157,6 @@ const styles = StyleSheet.create({
     color: "#64748b",
     marginBottom: 12,
   },
-  textoOscuro: {
-    color: "#f1f5f9",
-  },
-  textoOscuroSecundario: {
-    color: "#94a3b8",
-  },
   input: {
     height: 50,
     borderWidth: 1,
@@ -210,11 +169,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     textAlign: "center",
     marginBottom: 12,
-  },
-  inputOscuro: {
-    backgroundColor: "#1e293b",
-    borderColor: "#334155",
-    color: "#f1f5f9",
   },
   boton: {
     height: 48,
@@ -240,9 +194,6 @@ const styles = StyleSheet.create({
     borderColor: "#3b82f6",
     backgroundColor: "#eff6ff",
   },
-  opcionDietaOscura: {
-    backgroundColor: "#1e293b",
-  },
   textoOpcionDieta: {
     fontSize: 15,
     fontWeight: "600",
@@ -260,37 +211,6 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: "#e2e8f0",
     marginVertical: 24,
-  },
-  filaAjuste: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 12,
-  },
-  textoAjuste: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#1e293b",
-  },
-  toggle: {
-    width: 50,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: "#e2e8f0",
-    justifyContent: "center",
-    paddingHorizontal: 3,
-  },
-  toggleActivo: {
-    backgroundColor: "#3b82f6",
-  },
-  toggleCirculo: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: "#fff",
-  },
-  toggleCirculoActivo: {
-    alignSelf: "flex-end",
   },
   email: {
     fontSize: 14,

@@ -5,6 +5,8 @@ import {
   StyleSheet,
   ScrollView,
   ActivityIndicator,
+  Pressable,
+  RefreshControl,
 } from "react-native"
 import { collection, query, where, getDocs } from "firebase/firestore"
 import { db } from "../../src/config/firebase"
@@ -18,7 +20,7 @@ export default function HistorialScreen() {
   const [datosSemana, setDatosSemana] = useState<number[]>([])
   const [diasSemana, setDiasSemana] = useState<string[]>([])
   const [cargando, setCargando] = useState(true)
-  const modoOscuro = useStore((s) => s.modoOscuro)
+  const [refrescando, setRefrescando] = useState(false)
 
   useEffect(() => {
     cargarSemana()
@@ -63,12 +65,38 @@ export default function HistorialScreen() {
     )
   }
 
+  function exportarCSV() {
+    if (typeof document === "undefined") return
+    let csv = "Día,Calorías\n"
+    for (let i = 0; i < diasSemana.length; i++) {
+      csv += `${diasSemana[i]},${datosSemana[i]}\n`
+    }
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = "historial_calorias.csv"
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <ScrollView
-      style={[styles.contenedor, modoOscuro && styles.oscuro]}
+      style={styles.contenedor}
       contentContainerStyle={styles.contenido}
+      refreshControl={
+        <RefreshControl
+          refreshing={refrescando}
+          onRefresh={async () => {
+            setRefrescando(true)
+            setCargando(true)
+            await cargarSemana()
+            setRefrescando(false)
+          }}
+        />
+      }
     >
-      <Text style={[styles.titulo, modoOscuro && styles.textoOscuro]}>
+      <Text style={styles.titulo}>
         Esta semana
       </Text>
 
@@ -80,15 +108,19 @@ export default function HistorialScreen() {
       <View style={styles.resumen}>
         {diasSemana.map((dia, i) => (
           <View key={i} style={styles.fila}>
-            <Text style={[styles.dia, modoOscuro && styles.textoOscuro]}>
+            <Text style={styles.dia}>
               {dia}
             </Text>
-            <Text style={[styles.valor, modoOscuro && styles.textoOscuro]}>
+            <Text style={styles.valor}>
               {datosSemana[i]} kcal
             </Text>
           </View>
         ))}
       </View>
+
+      <Pressable style={styles.botonExportar} onPress={exportarCSV}>
+        <Text style={styles.textoBoton}>Exportar CSV</Text>
+      </Pressable>
     </ScrollView>
   )
 }
@@ -97,9 +129,6 @@ const styles = StyleSheet.create({
   contenedor: {
     flex: 1,
     backgroundColor: "#f8fafc",
-  },
-  oscuro: {
-    backgroundColor: "#0f172a",
   },
   centro: {
     flex: 1,
@@ -114,9 +143,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "700",
     color: "#1e293b",
-  },
-  textoOscuro: {
-    color: "#f1f5f9",
   },
   resumen: {
     gap: 8,
@@ -138,5 +164,17 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "700",
     color: "#3b82f6",
+  },
+  botonExportar: {
+    backgroundColor: "#22c55e",
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: "center",
+    marginTop: 8,
+  },
+  textoBoton: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "700",
   },
 })

@@ -38,5 +38,4 @@ export interface StoreState {
   comidas: Comida[]
   registroDiario: RegistroDiario | null
   cargando: boolean
-  modoOscuro: boolean
 }
