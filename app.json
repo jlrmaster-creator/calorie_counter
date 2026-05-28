@@ -29,10 +29,21 @@
     "web": {
       "bundler": "metro",
       "output": "single",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/favicon.png",
+      "base": "/calorie_counter/"
+    },
+    "extra": {
+      "router": {
+        "base": "/calorie_counter/"
+      }
     },
     "plugins": [
-      "expo-router",
+      [
+        "expo-router",
+        {
+          "base": "/calorie_counter/"
+        }
+      ],
       [
         "expo-splash-screen",
         {
