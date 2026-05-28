@@ -1,13 +1,14 @@
-import { View, Text, StyleSheet } from "react-native"
+import { View, Text, Pressable, StyleSheet } from "react-native"
 import { TIPOS_COMIDA } from "../utils/constantes"
 import type { Comida } from "../types"
 
 interface Props {
   comida: Comida
-  onPress?: () => void
+  onEditar: () => void
+  onEliminar: () => void
 }
 
-export default function TarjetaComida({ comida, onPress }: Props) {
+export default function TarjetaComida({ comida, onEditar, onEliminar }: Props) {
   const info = TIPOS_COMIDA.find((t) => t.id === comida.tipo)
 
   return (
@@ -23,6 +24,12 @@ export default function TarjetaComida({ comida, onPress }: Props) {
         </Text>
       </View>
       <Text style={styles.calorias}>{comida.calorias} kcal</Text>
+      <Pressable style={styles.botonAccion} onPress={onEditar}>
+        <Text style={styles.iconoAccion}>✏️</Text>
+      </Pressable>
+      <Pressable style={styles.botonAccion} onPress={onEliminar}>
+        <Text style={styles.iconoAccion}>🗑️</Text>
+      </Pressable>
     </View>
   )
 }
@@ -34,7 +41,7 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: "#fff",
     borderRadius: 12,
-    gap: 12,
+    gap: 8,
     shadowColor: "#000",
     shadowOpacity: 0.05,
     shadowRadius: 4,
@@ -57,8 +64,15 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   calorias: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "700",
     color: "#3b82f6",
+    marginRight: 4,
+  },
+  botonAccion: {
+    padding: 6,
+  },
+  iconoAccion: {
+    fontSize: 18,
   },
 })

@@ -5,7 +5,6 @@ import {
   FlatList,
   ActivityIndicator,
   StyleSheet,
-  Pressable,
   Alert,
   RefreshControl,
 } from "react-native"
@@ -111,35 +110,23 @@ export default function InicioScreen() {
           </View>
         }
         renderItem={({ item }) => (
-          <Pressable
-            onPress={() => {
-              Alert.alert("Opciones", "¿Qué quieres hacer?", [
-                {
-                  text: "Editar",
-                  onPress: () => {
-                    setComidaEditar(item)
-                    setModalVisible(true)
-                  },
-                },
-                {
-                  text: "Eliminar",
-                  onPress: () => {
-                    Alert.alert(
-                      "Confirmar",
-                      "¿Seguro que quieres eliminar esta comida?",
-                      [
-                        { text: "Cancelar", style: "cancel" },
-                        { text: "Eliminar", style: "destructive", onPress: () => borrarComida(user!.uid, item.id) },
-                      ]
-                    )
-                  },
-                },
-                { text: "Cancelar", style: "cancel" },
-              ])
+          <TarjetaComida
+            comida={item}
+            onEditar={() => {
+              setComidaEditar(item)
+              setModalVisible(true)
             }}
-          >
-            <TarjetaComida comida={item} />
-          </Pressable>
+            onEliminar={() => {
+              Alert.alert(
+                "Confirmar",
+                "¿Seguro que quieres eliminar esta comida?",
+                [
+                  { text: "Cancelar", style: "cancel" },
+                  { text: "Eliminar", style: "destructive", onPress: () => borrarComida(user!.uid, item.id) },
+                ]
+              )
+            }}
+          />
         )}
         ListEmptyComponent={
           <View style={styles.vacio}>
