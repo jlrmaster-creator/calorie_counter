@@ -1,0 +1,16 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Cada usuario solo puede leer/escribir su propio documento
+    match /usuarios/{userId} {
+      allow read, update: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow delete: if false; // Los usuarios no se eliminan desde la app
+
+      // Subcolección de comidas por usuario
+      match /comidas/{comidaId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+  }
+}

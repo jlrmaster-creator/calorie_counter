@@ -1,0 +1,70 @@
+import {
+  collection,
+  addDoc,
+  deleteDoc,
+  updateDoc,
+  doc,
+  query,
+  where,
+  getDocs,
+  orderBy,
+  Timestamp,
+} from "firebase/firestore"
+import { db } from "../config/firebase"
+import type { Comida, TipoComida } from "../types"
+
+function comidasRef(userId: string) {
+  return collection(db, "usuarios", userId, "comidas")
+}
+
+export async function agregarComida(
+  userId: string,
+  comida: Omit<Comida, "id" | "creadoEn">
+): Promise<string> {
+  const ref = comidasRef(userId)
+  const docRef = await addDoc(ref, {
+    ...comida,
+    creadoEn: Timestamp.now(),
+  })
+  return docRef.id
+}
+
+export async function obtenerComidasPorFecha(
+  userId: string,
+  fecha: string
+): Promise<Comida[]> {
+  const ref = comidasRef(userId)
+  const q = query(
+    ref,
+    where("fecha", "==", fecha),
+    orderBy("creadoEn", "asc")
+  )
+  const snapshot = await getDocs(q)
+  return snapshot.docs.map((doc) => {
+    const data = doc.data()
+    return {
+      id: doc.id,
+      tipo: data.tipo as TipoComida,
+      calorias: data.calorias as number,
+      fecha: data.fecha as string,
+      creadoEn: (data.creadoEn as Timestamp).toMillis(),
+    } as Comida
+  })
+}
+
+export async function eliminarComida(
+  userId: string,
+  comidaId: string
+): Promise<void> {
+  const ref = doc(db, "usuarios", userId, "comidas", comidaId)
+  await deleteDoc(ref)
+}
+
+export async function actualizarComida(
+  userId: string,
+  comidaId: string,
+  datos: Partial<Pick<Comida, "calorias" | "tipo">>
+): Promise<void> {
+  const ref = doc(db, "usuarios", userId, "comidas", comidaId)
+  await updateDoc(ref, datos)
+}
