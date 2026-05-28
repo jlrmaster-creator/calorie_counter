@@ -43,6 +43,7 @@ export async function obtenerComidasPorFecha(
       calorias: data.calorias as number,
       fecha: data.fecha as string,
       creadoEn: (data.creadoEn as Timestamp).toMillis(),
+      nota: data.nota as string | undefined,
     } as Comida
   })
   comidas.sort((a, b) => a.creadoEn - b.creadoEn)
@@ -69,6 +70,7 @@ export async function obtenerComidasPorRango(
       calorias: data.calorias as number,
       fecha: data.fecha as string,
       creadoEn: (data.creadoEn as Timestamp).toMillis(),
+      nota: data.nota as string | undefined,
     } as Comida
   })
 }
@@ -84,7 +86,7 @@ export async function eliminarComida(
 export async function actualizarComida(
   userId: string,
   comidaId: string,
-  datos: Partial<Pick<Comida, "calorias" | "tipo">>
+  datos: Partial<Pick<Comida, "calorias" | "tipo" | "nota">>
 ): Promise<void> {
   const ref = doc(db, "usuarios", userId, "comidas", comidaId)
   await updateDoc(ref, datos)

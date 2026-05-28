@@ -31,12 +31,14 @@ export default function ModalEditarComida({
 }: Props) {
   const [calorias, setCalorias] = useState("")
   const [tipo, setTipo] = useState<TipoComida>("desayuno")
+  const [nota, setNota] = useState("")
   const [guardando, setGuardando] = useState(false)
 
   useEffect(() => {
     if (comida) {
       setCalorias(comida.calorias.toString())
       setTipo(comida.tipo)
+      setNota(comida.nota || "")
     }
   }, [comida])
 
@@ -49,7 +51,11 @@ export default function ModalEditarComida({
 
     setGuardando(true)
     try {
-      await actualizarComida(userId, comida!.id, { calorias: kcal, tipo })
+      await actualizarComida(userId, comida!.id, {
+        calorias: kcal,
+        tipo,
+        nota: nota || undefined,
+      })
       onSaved()
       onClose()
     } catch {
@@ -78,6 +84,14 @@ export default function ModalEditarComida({
             onChangeText={setCalorias}
             keyboardType="number-pad"
             returnKeyType="done"
+          />
+
+          <TextInput
+            style={styles.inputNota}
+            placeholder="Nota (opcional)"
+            placeholderTextColor="#94a3b8"
+            value={nota}
+            onChangeText={setNota}
           />
 
           <View style={styles.botones}>
@@ -132,6 +146,16 @@ const styles = StyleSheet.create({
     color: "#1e293b",
     backgroundColor: "#f8fafc",
     textAlign: "center",
+  },
+  inputNota: {
+    height: 48,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    fontSize: 15,
+    color: "#1e293b",
+    backgroundColor: "#f8fafc",
   },
   botones: {
     flexDirection: "row",

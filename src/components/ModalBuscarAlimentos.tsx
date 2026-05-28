@@ -40,6 +40,10 @@ export default function ModalBuscarAlimentos({
             </Pressable>
           </View>
 
+          <Text style={styles.sugerenciasSub}>
+            Escribe un alimento para buscarlo
+          </Text>
+
           <TextInput
             style={styles.input}
             placeholder="Ej: pollo, arroz, manzana..."
@@ -57,9 +61,6 @@ export default function ModalBuscarAlimentos({
                   {cat}
                 </Text>
               ))}
-              <Text style={styles.sugerenciasSub}>
-                Escribe un alimento para buscarlo
-              </Text>
             </View>
           ) : resultados.length === 0 ? (
             <View style={styles.vacio}>

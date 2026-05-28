@@ -29,7 +29,7 @@ interface AppState {
 
   setUsuario: (usuario: Usuario | null) => void
   cargarComidas: (userId: string, fecha?: string) => Promise<void>
-  anadirComida: (userId: string, tipo: TipoComida, calorias: number, fecha: string) => Promise<void>
+  anadirComida: (userId: string, tipo: TipoComida, calorias: number, fecha: string, nota?: string) => Promise<void>
   borrarComida: (userId: string, comidaId: string) => Promise<void>
   cambiarObjetivo: (userId: string, objetivo: number) => Promise<void>
   cambiarDieta: (userId: string, dieta: TipoDieta | null) => Promise<void>
@@ -59,11 +59,12 @@ export const useStore = create<AppState>((set, get) => ({
     }
   },
 
-  anadirComida: async (userId, tipo, calorias, fecha) => {
+  anadirComida: async (userId, tipo, calorias, fecha, nota) => {
     await agregarComida(userId, {
       tipo,
       calorias,
       fecha,
+      nota,
     })
     await get().cargarComidas(userId, fecha)
     await get().verificarLogros(userId, fecha)

@@ -22,6 +22,11 @@ export default function TarjetaComida({ comida, onEditar, onEliminar }: Props) {
             minute: "2-digit",
           })}
         </Text>
+        {comida.nota ? (
+          <Text style={styles.nota} numberOfLines={1}>
+            {comida.nota}
+          </Text>
+        ) : null}
       </View>
       <Text style={styles.calorias}>{comida.calorias} kcal</Text>
       <Pressable style={styles.botonAccion} onPress={onEditar}>
@@ -62,6 +67,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#6b7280",
     marginTop: 2,
+  },
+  nota: {
+    fontSize: 11,
+    color: "#94a3b8",
+    marginTop: 2,
+    fontStyle: "italic",
   },
   calorias: {
     fontSize: 15,

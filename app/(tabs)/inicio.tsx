@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import {
   View,
   Text,
@@ -10,15 +10,20 @@ import {
 import { useStore, calcularTotalCalorias } from "../../src/store/useStore"
 import { auth } from "../../src/config/firebase"
 import { obtenerFechaActual } from "../../src/utils/calculos"
-import { calcularEstadoDia } from "../../src/utils/calculos"
+import { calcularEstadoDia, obtenerNombreDia } from "../../src/utils/calculos"
 import { pedirPermisoNotificaciones } from "../../src/utils/notificaciones"
+import { obtenerComidasPorRango } from "../../src/db/comidas"
 import BarraProgreso from "../../src/components/BarraProgreso"
 import EstadoDia from "../../src/components/EstadoDia"
 import TarjetaComida from "../../src/components/TarjetaComida"
-import type { EstadoDia as EstadoDiaTipo } from "../../src/types"
-
 import ModalEditarComida from "../../src/components/ModalEditarComida"
-import type { Comida } from "../../src/types"
+import type { EstadoDia as EstadoDiaTipo, Comida } from "../../src/types"
+
+function sumarDias(fecha: string, dias: number): string {
+  const d = new Date(fecha)
+  d.setDate(d.getDate() + dias)
+  return d.toISOString().split("T")[0]
+}
 
 export default function InicioScreen() {
   const usuario = useStore((s) => s.usuario)
@@ -30,6 +35,9 @@ export default function InicioScreen() {
   const [refrescando, setRefrescando] = useState(false)
   const [comidaEditar, setComidaEditar] = useState<Comida | null>(null)
   const [modalVisible, setModalVisible] = useState(false)
+  const [historial7, setHistorial7] = useState<
+    { fecha: string; total: number; dentro: boolean }[]
+  >([])
 
   const user = auth.currentUser
   const fechaActiva = obtenerFechaActual()
@@ -45,6 +53,38 @@ export default function InicioScreen() {
       ? "#eab308"
       : "#ef4444"
 
+  const rachaActual = () => {
+    let r = 0
+    for (const d of historial7) {
+      if (d.dentro) r++
+      else break
+    }
+    return r
+  }
+
+  const cargarHistorial7 = useCallback(async () => {
+    if (!user) return
+    const inicio = sumarDias(fechaActiva, -6)
+    const todas = await obtenerComidasPorRango(user.uid, inicio, fechaActiva)
+    const porFecha: Record<string, Comida[]> = {}
+    for (const c of todas) {
+      if (!porFecha[c.fecha]) porFecha[c.fecha] = []
+      porFecha[c.fecha].push(c)
+    }
+    const dias: { fecha: string; total: number; dentro: boolean }[] = []
+    for (let i = 6; i >= 0; i--) {
+      const f = sumarDias(fechaActiva, -i)
+      const c = porFecha[f] || []
+      const kcal = c.reduce((s, x) => s + x.calorias, 0)
+      dias.push({
+        fecha: f,
+        total: kcal,
+        dentro: kcal > 0 && kcal <= objetivo,
+      })
+    }
+    setHistorial7(dias)
+  }, [user, fechaActiva, objetivo])
+
   useEffect(() => {
     if (user) {
       inicializarDesdeFirebase(user.uid)
@@ -54,6 +94,12 @@ export default function InicioScreen() {
   useEffect(() => {
     pedirPermisoNotificaciones()
   }, [])
+
+  useEffect(() => {
+    if (user && comidas.length >= 0) {
+      cargarHistorial7()
+    }
+  }, [user, comidas])
 
   if (cargando) {
     return (
@@ -99,12 +145,34 @@ export default function InicioScreen() {
 
             <EstadoDia estado={estado} />
 
-            {comidas.length > 0 && (
-              <Text
-                style={styles.subtitulo}
-              >
-                Comidas de hoy
+            <View style={styles.rachaCard}>
+              <Text style={styles.rachaIcono}>
+                {rachaActual() >= 7 ? "🔥" : rachaActual() >= 3 ? "⭐" : "📅"}
               </Text>
+              <View style={styles.rachaInfo}>
+                <Text style={styles.rachaNum}>{rachaActual()}</Text>
+                <Text style={styles.rachaLabel}>días seguidos cumpliendo objetivo</Text>
+              </View>
+            </View>
+
+            <View style={styles.semana}>
+              {historial7.map((d, i) => {
+                const hoy = d.fecha === fechaActiva
+                return (
+                  <View key={i} style={styles.diaCol}>
+                    <Text style={[styles.diaNombre, hoy && styles.diaHoy]}>
+                      {obtenerNombreDia(d.fecha)}
+                    </Text>
+                    <Text style={styles.diaIcono}>
+                      {d.dentro ? "✅" : d.total > 0 ? "⚠️" : "⬜"}
+                    </Text>
+                  </View>
+                )
+              })}
+            </View>
+
+            {comidas.length > 0 && (
+              <Text style={styles.subtitulo}>Comidas de hoy</Text>
             )}
           </View>
         }
@@ -123,9 +191,7 @@ export default function InicioScreen() {
             <Text style={styles.textoVacio}>
               No hay comidas registradas hoy
             </Text>
-            <Text
-              style={styles.textoVacioSub}
-            >
+            <Text style={styles.textoVacioSub}>
               Ve a "Añadir" para registrar tu primera comida
             </Text>
           </View>
@@ -168,6 +234,53 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#64748b",
     textTransform: "capitalize",
+  },
+  rachaCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fffbeb",
+    borderRadius: 12,
+    padding: 14,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: "#fde68a",
+  },
+  rachaIcono: {
+    fontSize: 28,
+  },
+  rachaInfo: {
+    flex: 1,
+  },
+  rachaNum: {
+    fontSize: 24,
+    fontWeight: "800",
+    color: "#f59e0b",
+  },
+  rachaLabel: {
+    fontSize: 12,
+    color: "#92400e",
+    marginTop: 2,
+  },
+  semana: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 4,
+  },
+  diaCol: {
+    alignItems: "center",
+    gap: 4,
+  },
+  diaNombre: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#94a3b8",
+  },
+  diaHoy: {
+    color: "#3b82f6",
+    fontWeight: "700",
+  },
+  diaIcono: {
+    fontSize: 16,
   },
   subtitulo: {
     fontSize: 18,

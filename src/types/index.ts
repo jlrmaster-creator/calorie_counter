@@ -10,6 +10,7 @@ export interface Comida {
   calorias: number
   fecha: string
   creadoEn: number
+  nota?: string
 }
 
 export interface RegistroDiario {

@@ -8,7 +8,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  FlatList,
+  ScrollView,
 } from "react-native"
 import { useStore } from "../../src/store/useStore"
 import { auth } from "../../src/config/firebase"
@@ -20,19 +20,21 @@ import type { TipoComida, Comida } from "../../src/types"
 import type { Alimento } from "../../src/data/alimentos"
 import { PREMIOS_DEF } from "../../src/data/premios"
 
-interface AlimentoSeleccionado {
+interface AlimentoSel {
   nombre: string
-  calorias: number
+  caloriasBase: number
+  gramos: number
 }
 
 export default function AnadirScreen() {
   const [tipo, setTipo] = useState<TipoComida>("desayuno")
   const [calorias, setCalorias] = useState("")
+  const [nota, setNota] = useState("")
   const [guardando, setGuardando] = useState(false)
   const [comidaEditar, setComidaEditar] = useState<Comida | null>(null)
   const [modalEditarVisible, setModalEditarVisible] = useState(false)
   const [modalBuscarVisible, setModalBuscarVisible] = useState(false)
-  const [alimentosSel, setAlimentosSel] = useState<AlimentoSeleccionado[]>([])
+  const [alimentosSel, setAlimentosSel] = useState<AlimentoSel[]>([])
   const anadirComida = useStore((s) => s.anadirComida)
   const comidas = useStore((s) => s.comidas)
   const nuevosPremios = useStore((s) => s.nuevosPremios)
@@ -50,19 +52,35 @@ export default function AnadirScreen() {
     limpiarNuevosPremios()
   }, [nuevosPremios])
 
-  function handleSeleccionarAlimento(alimento: Alimento) {
-    const nuevos = [...alimentosSel, { nombre: alimento.nombre, calorias: alimento.calorias }]
-    setAlimentosSel(nuevos)
-    const total = nuevos.reduce((s, a) => s + a.calorias, 0)
+  function recalcularTotal(items: AlimentoSel[]) {
+    const total = items.reduce(
+      (s, a) => s + Math.round((a.caloriasBase / 100) * a.gramos),
+      0
+    )
     setCalorias(total.toString())
+  }
+
+  function handleSeleccionarAlimento(alimento: Alimento) {
+    const nuevos = [
+      ...alimentosSel,
+      { nombre: alimento.nombre, caloriasBase: alimento.calorias, gramos: 100 },
+    ]
+    setAlimentosSel(nuevos)
+    recalcularTotal(nuevos)
     setModalBuscarVisible(false)
+  }
+
+  function cambiarGramos(index: number, gramos: number) {
+    const nuevos = [...alimentosSel]
+    nuevos[index] = { ...nuevos[index], gramos }
+    setAlimentosSel(nuevos)
+    recalcularTotal(nuevos)
   }
 
   function eliminarAlimento(index: number) {
     const nuevos = alimentosSel.filter((_, i) => i !== index)
     setAlimentosSel(nuevos)
-    const total = nuevos.reduce((s, a) => s + a.calorias, 0)
-    setCalorias(total.toString())
+    recalcularTotal(nuevos)
   }
 
   async function handleGuardar() {
@@ -95,8 +113,9 @@ export default function AnadirScreen() {
     setGuardando(true)
     try {
       const user = auth.currentUser!
-      await anadirComida(user.uid, tipo, kcal, fecha)
+      await anadirComida(user.uid, tipo, kcal, fecha, nota || undefined)
       setCalorias("")
+      setNota("")
       setAlimentosSel([])
       Alert.alert("✅", "Comida registrada")
     } catch {
@@ -111,10 +130,8 @@ export default function AnadirScreen() {
       style={styles.contenedor}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <View style={styles.contenido}>
-        <Text style={styles.titulo}>
-          ¿Qué has comido?
-        </Text>
+      <ScrollView contentContainerStyle={styles.contenido}>
+        <Text style={styles.titulo}>¿Qué has comido?</Text>
 
         <SelectorComida seleccionado={tipo} onSeleccionar={setTipo} />
 
@@ -132,25 +149,60 @@ export default function AnadirScreen() {
           style={styles.botonBuscar}
           onPress={() => setModalBuscarVisible(true)}
         >
-          <Text style={styles.textoBotonBuscar}>
-            Buscar alimentos
-          </Text>
+          <Text style={styles.textoBotonBuscar}>Buscar alimentos</Text>
         </Pressable>
 
         {alimentosSel.length > 0 && (
           <View style={styles.listaAlimentos}>
             <Text style={styles.listaTitulo}>Alimentos seleccionados:</Text>
-            {alimentosSel.map((a, i) => (
-              <View key={i} style={styles.alimentoItem}>
-                <Text style={styles.alimentoNombre}>{a.nombre}</Text>
-                <Text style={styles.alimentoCalorias}>{a.calorias} kcal</Text>
-                <Pressable onPress={() => eliminarAlimento(i)}>
-                  <Text style={styles.eliminar}>✕</Text>
-                </Pressable>
-              </View>
-            ))}
+            {alimentosSel.map((a, i) => {
+              const calReales = Math.round((a.caloriasBase / 100) * a.gramos)
+              return (
+                <View key={i} style={styles.alimentoItem}>
+                  <View style={styles.alimentoInfo}>
+                    <Text style={styles.alimentoNombre}>{a.nombre}</Text>
+                    <Text style={styles.alimentoCalorias}>
+                      {calReales} kcal
+                    </Text>
+                  </View>
+                  <View style={styles.gramosControl}>
+                    <Pressable
+                      onPress={() => cambiarGramos(i, Math.max(10, a.gramos - 10))}
+                    >
+                      <Text style={styles.gramosBtn}>−</Text>
+                    </Pressable>
+                    <TextInput
+                      style={styles.gramosInput}
+                      value={String(a.gramos)}
+                      onChangeText={(v) => {
+                        const g = parseInt(v, 10) || 0
+                        cambiarGramos(i, g)
+                      }}
+                      keyboardType="number-pad"
+                    />
+                    <Pressable
+                      onPress={() => cambiarGramos(i, Math.min(1000, a.gramos + 10))}
+                    >
+                      <Text style={styles.gramosBtn}>+</Text>
+                    </Pressable>
+                    <Text style={styles.gramosLabel}>g</Text>
+                  </View>
+                  <Pressable onPress={() => eliminarAlimento(i)}>
+                    <Text style={styles.eliminar}>✕</Text>
+                  </Pressable>
+                </View>
+              )
+            })}
           </View>
         )}
+
+        <TextInput
+          style={styles.inputNota}
+          placeholder="Nota (opcional)"
+          placeholderTextColor="#94a3b8"
+          value={nota}
+          onChangeText={setNota}
+        />
 
         <Pressable
           style={[styles.boton, guardando && styles.botonDesactivado]}
@@ -178,7 +230,7 @@ export default function AnadirScreen() {
           onClose={() => setModalBuscarVisible(false)}
           onSeleccionar={handleSeleccionarAlimento}
         />
-      </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   )
 }
@@ -228,7 +280,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f1f5f9",
     borderRadius: 12,
     padding: 12,
-    gap: 8,
+    gap: 10,
   },
   listaTitulo: {
     fontSize: 13,
@@ -240,21 +292,62 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
   },
-  alimentoNombre: {
+  alimentoInfo: {
     flex: 1,
+  },
+  alimentoNombre: {
     fontSize: 14,
     color: "#1e293b",
   },
   alimentoCalorias: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "700",
     color: "#3b82f6",
+  },
+  gramosControl: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  gramosBtn: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#3b82f6",
+    paddingHorizontal: 6,
+  },
+  gramosInput: {
+    width: 40,
+    height: 32,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    borderRadius: 6,
+    textAlign: "center",
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#1e293b",
+    backgroundColor: "#fff",
+    padding: 0,
+  },
+  gramosLabel: {
+    fontSize: 12,
+    color: "#94a3b8",
+    fontWeight: "600",
   },
   eliminar: {
     fontSize: 14,
     color: "#ef4444",
     fontWeight: "700",
-    paddingLeft: 8,
+    paddingLeft: 4,
+  },
+  inputNota: {
+    height: 48,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    fontSize: 15,
+    color: "#1e293b",
+    backgroundColor: "#fff",
   },
   boton: {
     height: 54,
