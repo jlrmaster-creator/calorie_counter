@@ -11,7 +11,7 @@ import {
   Platform,
   ScrollView,
 } from "react-native"
-import { router } from "expo-router"
+import { Redirect } from "expo-router"
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -25,6 +25,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("")
   const [esRegistro, setEsRegistro] = useState(false)
   const [cargando, setCargando] = useState(false)
+  const [redirectTo, setRedirectTo] = useState<string | null>(null)
 
   async function handleSubmit() {
     if (!email || !password) {
@@ -41,10 +42,10 @@ export default function LoginScreen() {
       if (esRegistro) {
         const cred = await createUserWithEmailAndPassword(auth, email, password)
         await crearUsuario(cred.user.uid, email.trim())
-        router.replace("/(tabs)/inicio")
+        setRedirectTo("/(tabs)/inicio")
       } else {
         await signInWithEmailAndPassword(auth, email.trim(), password)
-        router.replace("/(tabs)/inicio")
+        setRedirectTo("/(tabs)/inicio")
       }
     } catch (error: any) {
       const codigo = error.code
@@ -62,6 +63,8 @@ export default function LoginScreen() {
       setCargando(false)
     }
   }
+
+  if (redirectTo) return <Redirect href={redirectTo} />
 
   return (
     <KeyboardAvoidingView
