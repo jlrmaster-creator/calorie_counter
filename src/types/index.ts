@@ -24,6 +24,7 @@ export interface Usuario {
   email: string
   objetivoCalorias: number
   tipoDieta: TipoDieta | null
+  colesterol: boolean
 }
 
 export type PremioId =

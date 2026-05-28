@@ -12,6 +12,7 @@ interface UsuarioData {
   email: string
   objetivoCalorias: number
   tipoDieta: string | null
+  colesterol: boolean
 }
 
 export async function crearUsuario(
@@ -23,6 +24,7 @@ export async function crearUsuario(
     email,
     objetivoCalorias: 2000,
     tipoDieta: null,
+    colesterol: false,
     creadoEn: serverTimestamp(),
   })
 }
@@ -49,4 +51,12 @@ export async function actualizarDieta(
 ): Promise<void> {
   const usuarioRef = doc(db, "usuarios", userId)
   await updateDoc(usuarioRef, { tipoDieta })
+}
+
+export async function actualizarColesterol(
+  userId: string,
+  colesterol: boolean
+): Promise<void> {
+  const usuarioRef = doc(db, "usuarios", userId)
+  await updateDoc(usuarioRef, { colesterol })
 }

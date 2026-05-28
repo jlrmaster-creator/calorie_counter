@@ -18,10 +18,12 @@ import ModalEditarComida from "../../src/components/ModalEditarComida"
 import ModalBuscarAlimentos from "../../src/components/ModalBuscarAlimentos"
 import type { TipoComida, Comida } from "../../src/types"
 import type { Alimento } from "../../src/data/alimentos"
+import { getSalud } from "../../src/data/alimentos"
 import { PREMIOS_DEF } from "../../src/data/premios"
 
 interface AlimentoSel {
   nombre: string
+  categoria: string
   caloriasBase: number
   gramos: number
 }
@@ -35,6 +37,7 @@ export default function AnadirScreen() {
   const [modalEditarVisible, setModalEditarVisible] = useState(false)
   const [modalBuscarVisible, setModalBuscarVisible] = useState(false)
   const [alimentosSel, setAlimentosSel] = useState<AlimentoSel[]>([])
+  const usuario = useStore((s) => s.usuario)
   const anadirComida = useStore((s) => s.anadirComida)
   const comidas = useStore((s) => s.comidas)
   const nuevosPremios = useStore((s) => s.nuevosPremios)
@@ -63,7 +66,7 @@ export default function AnadirScreen() {
   function handleSeleccionarAlimento(alimento: Alimento) {
     const nuevos = [
       ...alimentosSel,
-      { nombre: alimento.nombre, caloriasBase: alimento.calorias, gramos: 100 },
+      { nombre: alimento.nombre, categoria: alimento.categoria, caloriasBase: alimento.calorias, gramos: 100 },
     ]
     setAlimentosSel(nuevos)
     recalcularTotal(nuevos)
@@ -157,8 +160,22 @@ export default function AnadirScreen() {
             <Text style={styles.listaTitulo}>Alimentos seleccionados:</Text>
             {alimentosSel.map((a, i) => {
               const calReales = Math.round((a.caloriasBase / 100) * a.gramos)
+              const salud = getSalud({ nombre: a.nombre, categoria: a.categoria, calorias: a.caloriasBase })
               return (
                 <View key={i} style={styles.alimentoItem}>
+                  <View
+                    style={[
+                      styles.saludDot,
+                      {
+                        backgroundColor:
+                          salud === "verde"
+                            ? "#22c55e"
+                            : salud === "amarillo"
+                              ? "#eab308"
+                              : "#ef4444",
+                      },
+                    ]}
+                  />
                   <View style={styles.alimentoInfo}>
                     <Text style={styles.alimentoNombre}>{a.nombre}</Text>
                     <Text style={styles.alimentoCalorias}>
@@ -229,6 +246,7 @@ export default function AnadirScreen() {
           visible={modalBuscarVisible}
           onClose={() => setModalBuscarVisible(false)}
           onSeleccionar={handleSeleccionarAlimento}
+          colesterol={usuario?.colesterol}
         />
       </ScrollView>
     </KeyboardAvoidingView>
@@ -291,6 +309,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
+  },
+  saludDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
   },
   alimentoInfo: {
     flex: 1,

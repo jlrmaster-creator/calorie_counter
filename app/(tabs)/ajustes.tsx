@@ -4,6 +4,7 @@ import {
   Text,
   TextInput,
   Pressable,
+  Switch,
   StyleSheet,
   ScrollView,
   Alert,
@@ -17,6 +18,7 @@ export default function AjustesScreen() {
   const usuario = useStore((s) => s.usuario)
   const cambiarObjetivo = useStore((s) => s.cambiarObjetivo)
   const cambiarDieta = useStore((s) => s.cambiarDieta)
+  const cambiarColesterol = useStore((s) => s.cambiarColesterol)
   const [objetivoInput, setObjetivoInput] = useState(
     String(usuario?.objetivoCalorias || 2000)
   )
@@ -45,6 +47,12 @@ export default function AjustesScreen() {
         await cambiarObjetivo(user.uid, info.rangoCalorico[1])
       }
     }
+  }
+
+  async function handleCambiarColesterol(valor: boolean) {
+    const user = auth.currentUser
+    if (!user) return
+    await cambiarColesterol(user.uid, valor)
   }
 
   return (
@@ -121,6 +129,24 @@ export default function AjustesScreen() {
         )
       })}
 
+      <Text style={[styles.titulo, { marginTop: 24 }]}>
+        Colesterol
+      </Text>
+      <View style={styles.colesterolRow}>
+        <Text style={styles.colesterolLabel}>Tengo el colesterol alto</Text>
+        <Switch
+          value={usuario?.colesterol || false}
+          onValueChange={handleCambiarColesterol}
+          trackColor={{ false: "#e2e8f0", true: "#93c5fd" }}
+          thumbColor={usuario?.colesterol ? "#3b82f6" : "#cbd5e1"}
+        />
+      </View>
+      {usuario?.colesterol && (
+        <Text style={styles.colesterolInfo}>
+          Al seleccionar alimentos perjudiciales para el colesterol recibirás un aviso
+        </Text>
+      )}
+
     </ScrollView>
   )
 }
@@ -193,6 +219,28 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#64748b",
     marginTop: 2,
+  },
+  colesterolRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+  },
+  colesterolLabel: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#1e293b",
+    flex: 1,
+  },
+  colesterolInfo: {
+    fontSize: 12,
+    color: "#64748b",
+    marginTop: 4,
+    fontStyle: "italic",
   },
 
 })

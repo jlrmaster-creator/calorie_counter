@@ -1,7 +1,74 @@
+export type Salud = "verde" | "amarillo" | "rojo"
+
 export interface Alimento {
   categoria: string
   nombre: string
   calorias: number
+  salud?: Salud
+  colesterolAlto?: boolean
+}
+
+export function getSalud(alimento: Alimento): Salud {
+  const { categoria, nombre } = alimento
+
+  if (categoria === "Verduras") return "verde"
+  if (categoria === "Frutas") return "verde"
+  if (categoria === "Legumbres") return "verde"
+  if (categoria === "Pescados") return "verde"
+
+  if (categoria === "Aceites") return "rojo"
+  if (categoria === "Dulces") return "rojo"
+  if (categoria === "Pastelería") return "rojo"
+
+  if (categoria === "Carnes") {
+    const procesadas = ["chorizo", "salami", "salchichón", "salchicha", "mortadela", "butifarra", "bacon", "chicharrón", "foie"]
+    if (procesadas.some((p) => nombre.toLowerCase().includes(p))) return "rojo"
+    return "amarillo"
+  }
+
+  if (categoria === "Bebidas") {
+    const alcohol = ["cerveza", "vino", "whisky", "vodka", "ron", "ginebra", "coñac", "anís", "sidra", "champán", "vermouth"]
+    if (alcohol.some((a) => nombre.toLowerCase().includes(a))) return "rojo"
+    return "verde"
+  }
+
+  if (categoria === "Salsas") {
+    if (nombre.toLowerCase().includes("mayonesa")) return "rojo"
+    return "amarillo"
+  }
+
+  return "amarillo"
+}
+
+export function getColesterolAlto(alimento: Alimento): boolean {
+  const { categoria, nombre } = alimento
+
+  if (categoria === "Carnes") {
+    const malos = ["chorizo", "salami", "salchichón", "salchicha", "mortadela", "butifarra", "bacon", "chicharrón", "foie", "jamón", "lomo embuchado", "hamburguesa", "tira de asado"]
+    if (malos.some((m) => nombre.toLowerCase().includes(m))) return true
+  }
+
+  if (categoria === "Huevos" && (nombre.toLowerCase().includes("huevo") || nombre.toLowerCase().includes("yema"))) return true
+
+  if (categoria === "Aceites") return true
+
+  if (categoria === "Salsas" && nombre.toLowerCase().includes("mayonesa")) return true
+
+  if (categoria === "Pastelería") return true
+
+  if (categoria === "Dulces") return true
+
+  if (categoria === "Lácteos") {
+    const grasos = ["nata", "crema", "queso", "mousse", "helados lácteos", "leche condensada", "leche entera", "leche de oveja", "leche en polvo entera"]
+    if (grasos.some((g) => nombre.toLowerCase().includes(g))) return true
+  }
+
+  if (categoria === "Pescados") {
+    const mariscos = ["cangrejo", "langosta", "langostino", "gamba", "caviar"]
+    if (mariscos.some((m) => nombre.toLowerCase().includes(m))) return true
+  }
+
+  return false
 }
 
 export const ALIMENTOS: Alimento[] = [

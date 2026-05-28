@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useCallback } from "react"
 import {
   Modal,
   View,
@@ -7,20 +7,29 @@ import {
   FlatList,
   Pressable,
   StyleSheet,
+  Alert,
 } from "react-native"
-import { buscarAlimentos, CATEGORIAS } from "../data/alimentos"
-import type { Alimento } from "../data/alimentos"
+import { buscarAlimentos, CATEGORIAS, getSalud, getColesterolAlto } from "../data/alimentos"
+import type { Alimento, Salud } from "../data/alimentos"
 
 interface Props {
   visible: boolean
   onClose: () => void
   onSeleccionar: (alimento: Alimento) => void
+  colesterol?: boolean
+}
+
+const COLOR_SALUD: Record<Salud, string> = {
+  verde: "#22c55e",
+  amarillo: "#eab308",
+  rojo: "#ef4444",
 }
 
 export default function ModalBuscarAlimentos({
   visible,
   onClose,
   onSeleccionar,
+  colesterol = false,
 }: Props) {
   const [query, setQuery] = useState("")
 
@@ -73,25 +82,57 @@ export default function ModalBuscarAlimentos({
               data={resultados}
               keyExtractor={(_, i) => i.toString()}
               contentContainerStyle={styles.lista}
-              renderItem={({ item }) => (
-                <Pressable
-                  style={styles.alimentoItem}
-                  onPress={() => {
-                    onSeleccionar(item)
-                    setQuery("")
-                  }}
-                >
-                  <View style={styles.alimentoInfo}>
-                    <Text style={styles.alimentoNombre}>{item.nombre}</Text>
-                    <Text style={styles.alimentoCategoria}>
-                      {item.categoria}
+              renderItem={({ item }) => {
+                const salud = getSalud(item)
+                const perjudicial = colesterol && getColesterolAlto(item)
+                return (
+                  <Pressable
+                    style={styles.alimentoItem}
+                    onPress={() => {
+                      if (perjudicial) {
+                        Alert.alert(
+                          "⚠️ Alimento perjudicial",
+                          `${item.nombre} puede ser perjudicial para el colesterol alto. ¿Añadirlo de todas formas?`,
+                          [
+                            { text: "Cancelar", style: "cancel" },
+                            {
+                              text: "Añadir",
+                              onPress: () => {
+                                onSeleccionar(item)
+                                setQuery("")
+                              },
+                            },
+                          ]
+                        )
+                      } else {
+                        onSeleccionar(item)
+                        setQuery("")
+                      }
+                    }}
+                  >
+                    <View style={styles.indicadorContainer}>
+                      <View
+                        style={[
+                          styles.indicador,
+                          { backgroundColor: COLOR_SALUD[salud] },
+                        ]}
+                      />
+                      {perjudicial && (
+                        <Text style={styles.indicadorAdvertencia}>!</Text>
+                      )}
+                    </View>
+                    <View style={styles.alimentoInfo}>
+                      <Text style={styles.alimentoNombre}>{item.nombre}</Text>
+                      <Text style={styles.alimentoCategoria}>
+                        {item.categoria}
+                      </Text>
+                    </View>
+                    <Text style={styles.alimentoCalorias}>
+                      {item.calorias} kcal
                     </Text>
-                  </View>
-                  <Text style={styles.alimentoCalorias}>
-                    {item.calorias} kcal
-                  </Text>
-                </Pressable>
-              )}
+                  </Pressable>
+                )
+              }}
             />
           )}
         </View>
@@ -194,5 +235,34 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "700",
     color: "#3b82f6",
+  },
+  indicadorContainer: {
+    width: 24,
+    height: 24,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 8,
+  },
+  indicador: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  indicadorAdvertencia: {
+    position: "absolute",
+    top: -4,
+    right: -4,
+    fontSize: 10,
+    fontWeight: "900",
+    color: "#ef4444",
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    width: 14,
+    height: 14,
+    textAlign: "center",
+    lineHeight: 14,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#ef4444",
   },
 })
