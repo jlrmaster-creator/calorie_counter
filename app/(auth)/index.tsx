@@ -11,12 +11,13 @@ import {
   Platform,
   ScrollView,
 } from "react-native"
+import { router } from "expo-router"
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
 } from "firebase/auth"
 import { auth } from "../../src/config/firebase"
-import { crearUsuario, obtenerUsuario } from "../../src/db/usuarios"
+import { crearUsuario } from "../../src/db/usuarios"
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("")
@@ -38,22 +39,11 @@ export default function LoginScreen() {
     try {
       if (esRegistro) {
         const cred = await createUserWithEmailAndPassword(auth, email, password)
-        await crearUsuario(cred.user.uid, email)
-        Alert.alert(
-          "✅ Cuenta creada",
-          "Registro exitoso. Ahora inicia sesión.",
-          [
-            {
-              text: "OK",
-              onPress: () => {
-                setEsRegistro(false)
-                setPassword("")
-              },
-            },
-          ]
-        )
+        await crearUsuario(cred.user.uid, email.trim())
+        router.replace("/(tabs)/inicio")
       } else {
-        await signInWithEmailAndPassword(auth, email, password)
+        await signInWithEmailAndPassword(auth, email.trim(), password)
+        router.replace("/(tabs)/inicio")
       }
     } catch (error: any) {
       const codigo = error.code
