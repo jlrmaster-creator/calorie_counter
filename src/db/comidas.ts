@@ -7,7 +7,6 @@ import {
   query,
   where,
   getDocs,
-  orderBy,
   Timestamp,
 } from "firebase/firestore"
 import { db } from "../config/firebase"
@@ -34,13 +33,9 @@ export async function obtenerComidasPorFecha(
   fecha: string
 ): Promise<Comida[]> {
   const ref = comidasRef(userId)
-  const q = query(
-    ref,
-    where("fecha", "==", fecha),
-    orderBy("creadoEn", "asc")
-  )
+  const q = query(ref, where("fecha", "==", fecha))
   const snapshot = await getDocs(q)
-  return snapshot.docs.map((doc) => {
+  const comidas = snapshot.docs.map((doc) => {
     const data = doc.data()
     return {
       id: doc.id,
@@ -50,6 +45,8 @@ export async function obtenerComidasPorFecha(
       creadoEn: (data.creadoEn as Timestamp).toMillis(),
     } as Comida
   })
+  comidas.sort((a, b) => a.creadoEn - b.creadoEn)
+  return comidas
 }
 
 export async function eliminarComida(
