@@ -25,6 +25,28 @@ export interface Usuario {
   tipoDieta: TipoDieta | null
 }
 
+export type PremioId =
+  | "primer_bocado"
+  | "racha_3"
+  | "racha_7"
+  | "racha_30"
+  | "buen_dia"
+  | "variedad"
+  | "control_total"
+
+export interface Premio {
+  id: PremioId
+  desbloqueadoEn: number
+}
+
+export interface PremioDef {
+  id: PremioId
+  nombre: string
+  descripcion: string
+  icono: string
+  estrellas: number
+}
+
 export interface DietaInfo {
   id: TipoDieta
   nombre: string

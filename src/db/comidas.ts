@@ -49,6 +49,30 @@ export async function obtenerComidasPorFecha(
   return comidas
 }
 
+export async function obtenerComidasPorRango(
+  userId: string,
+  fechaInicio: string,
+  fechaFin: string
+): Promise<Comida[]> {
+  const ref = comidasRef(userId)
+  const q = query(
+    ref,
+    where("fecha", ">=", fechaInicio),
+    where("fecha", "<=", fechaFin)
+  )
+  const snapshot = await getDocs(q)
+  return snapshot.docs.map((doc) => {
+    const data = doc.data()
+    return {
+      id: doc.id,
+      tipo: data.tipo as TipoComida,
+      calorias: data.calorias as number,
+      fecha: data.fecha as string,
+      creadoEn: (data.creadoEn as Timestamp).toMillis(),
+    } as Comida
+  })
+}
+
 export async function eliminarComida(
   userId: string,
   comidaId: string

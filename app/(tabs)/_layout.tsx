@@ -5,6 +5,7 @@ const iconos: Record<string, string> = {
   inicio: "📊",
   anadir: "➕",
   historial: "📅",
+  premios: "🏆",
   ajustes: "⚙️",
 }
 
@@ -47,6 +48,15 @@ export default function TabLayout() {
           title: "Historial",
           tabBarIcon: () => (
             <Text style={{ fontSize: 22 }}>{iconos.historial}</Text>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="premios"
+        options={{
+          title: "Premios",
+          tabBarIcon: () => (
+            <Text style={{ fontSize: 22 }}>{iconos.premios}</Text>
           ),
         }}
       />

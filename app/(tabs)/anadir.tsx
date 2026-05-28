@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   View,
   Text,
@@ -18,6 +18,7 @@ import ModalEditarComida from "../../src/components/ModalEditarComida"
 import ModalBuscarAlimentos from "../../src/components/ModalBuscarAlimentos"
 import type { TipoComida, Comida } from "../../src/types"
 import type { Alimento } from "../../src/data/alimentos"
+import { PREMIOS_DEF } from "../../src/data/premios"
 
 interface AlimentoSeleccionado {
   nombre: string
@@ -34,6 +35,20 @@ export default function AnadirScreen() {
   const [alimentosSel, setAlimentosSel] = useState<AlimentoSeleccionado[]>([])
   const anadirComida = useStore((s) => s.anadirComida)
   const comidas = useStore((s) => s.comidas)
+  const nuevosPremios = useStore((s) => s.nuevosPremios)
+  const limpiarNuevosPremios = useStore((s) => s.limpiarNuevosPremios)
+
+  useEffect(() => {
+    if (nuevosPremios.length === 0) return
+    const texto = nuevosPremios
+      .map((np) => {
+        const def = PREMIOS_DEF.find((d) => d.id === np.id)
+        return def ? `${def.icono} ${def.nombre} (+${def.estrellas}⭐)` : np.id
+      })
+      .join("\n")
+    Alert.alert("🏆 Nuevo logro", texto)
+    limpiarNuevosPremios()
+  }, [nuevosPremios])
 
   function handleSeleccionarAlimento(alimento: Alimento) {
     const nuevos = [...alimentosSel, { nombre: alimento.nombre, calorias: alimento.calorias }]
