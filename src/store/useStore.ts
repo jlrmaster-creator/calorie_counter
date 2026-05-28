@@ -31,9 +31,14 @@ export const useStore = create<AppState>((set, get) => ({
   setUsuario: (usuario) => set({ usuario }),
 
   cargarComidas: async (userId, fecha) => {
-    const fechaActiva = fecha || obtenerFechaActual()
-    const comidas = await obtenerComidasPorFecha(userId, fechaActiva)
-    set({ comidas })
+    try {
+      const fechaActiva = fecha || obtenerFechaActual()
+      const comidas = await obtenerComidasPorFecha(userId, fechaActiva)
+      set({ comidas })
+    } catch (e) {
+      console.error("Error al cargar comidas:", e)
+      set({ comidas: [] })
+    }
   },
 
   anadirComida: async (userId, tipo, calorias, fecha) => {
@@ -81,19 +86,24 @@ export const useStore = create<AppState>((set, get) => ({
 
   inicializarDesdeFirebase: async (userId) => {
     set({ cargando: true })
-    const data = await obtenerUsuario(userId)
-    if (data) {
-      set({
-        usuario: {
-          id: data.id,
-          email: data.email,
-          objetivoCalorias: data.objetivoCalorias,
-          tipoDieta: data.tipoDieta as TipoDieta | null,
-        },
-      })
+    try {
+      const data = await obtenerUsuario(userId)
+      if (data) {
+        set({
+          usuario: {
+            id: data.id,
+            email: data.email,
+            objetivoCalorias: data.objetivoCalorias,
+            tipoDieta: data.tipoDieta as TipoDieta | null,
+          },
+        })
+      }
+      await get().cargarComidas(userId)
+    } catch (e) {
+      console.error("Error al inicializar desde Firebase:", e)
+    } finally {
+      set({ cargando: false })
     }
-    await get().cargarComidas(userId)
-    set({ cargando: false })
   },
 }))
 
