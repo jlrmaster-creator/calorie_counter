@@ -29,8 +29,18 @@ jobs:
       - run: npx expo export --platform web
         env:
           CI: true
+          EXPO_PUBLIC_URL: /calorie_counter
 
-      - name: Copy PWA files to dist
+      - name: Fix asset paths for GitHub Pages subpath
+        run: |
+          find dist -name "*.html" -exec sed -i \
+            -e 's|href="/_expo|href="/calorie_counter/_expo|g' \
+            -e 's|src="/_expo|src="/calorie_counter/_expo|g' \
+            -e 's|href="/manifest|href="/calorie_counter/manifest|g' \
+            -e 's|href="/icon-|href="/calorie_counter/icon-|g' \
+            {} +
+
+      - name: Copy PWA files
         run: cp -r public/* dist/
 
       - uses: actions/upload-pages-artifact@v3
