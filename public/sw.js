@@ -1,6 +1,6 @@
 self.importScripts()
 
-const CACHE = "calorias-v1"
+const CACHE = "calorias-v2"
 
 const BASE = "/calorie_counter"
 
@@ -12,6 +12,7 @@ const assets = [
 ]
 
 self.addEventListener("install", (event) => {
+  self.skipWaiting()
   event.waitUntil(
     caches.open(CACHE).then((cache) => cache.addAll(assets))
   )
@@ -36,6 +37,6 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
-    )
+    ).then(() => clients.claim())
   )
 })

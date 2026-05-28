@@ -13,12 +13,14 @@ import { useStore, calcularTotalCalorias } from "../../src/store/useStore"
 import { auth } from "../../src/config/firebase"
 import { obtenerFechaActual } from "../../src/utils/calculos"
 import { calcularEstadoDia } from "../../src/utils/calculos"
-import { actualizarComida } from "../../src/db/comidas"
 import { pedirPermisoNotificaciones } from "../../src/utils/notificaciones"
 import BarraProgreso from "../../src/components/BarraProgreso"
 import EstadoDia from "../../src/components/EstadoDia"
 import TarjetaComida from "../../src/components/TarjetaComida"
 import type { EstadoDia as EstadoDiaTipo } from "../../src/types"
+
+import ModalEditarComida from "../../src/components/ModalEditarComida"
+import type { Comida } from "../../src/types"
 
 export default function InicioScreen() {
   const usuario = useStore((s) => s.usuario)
@@ -28,6 +30,8 @@ export default function InicioScreen() {
   const inicializarDesdeFirebase = useStore((s) => s.inicializarDesdeFirebase)
   const borrarComida = useStore((s) => s.borrarComida)
   const [refrescando, setRefrescando] = useState(false)
+  const [comidaEditar, setComidaEditar] = useState<Comida | null>(null)
+  const [modalVisible, setModalVisible] = useState(false)
 
   const user = auth.currentUser
   const fechaActiva = obtenerFechaActual()
@@ -111,16 +115,10 @@ export default function InicioScreen() {
             onPress={() => {
               Alert.alert("Opciones", "¿Qué quieres hacer?", [
                 {
-                  text: "Editar calorías",
+                  text: "Editar",
                   onPress: () => {
-                    Alert.alert("Editar calorías", "Selecciona nuevo valor", [
-                      { text: "100", onPress: () => actualizarComida(user!.uid, item.id, { calorias: 100 }).then(() => cargarComidas(user!.uid)) },
-                      { text: "200", onPress: () => actualizarComida(user!.uid, item.id, { calorias: 200 }).then(() => cargarComidas(user!.uid)) },
-                      { text: "300", onPress: () => actualizarComida(user!.uid, item.id, { calorias: 300 }).then(() => cargarComidas(user!.uid)) },
-                      { text: "400", onPress: () => actualizarComida(user!.uid, item.id, { calorias: 400 }).then(() => cargarComidas(user!.uid)) },
-                      { text: "500", onPress: () => actualizarComida(user!.uid, item.id, { calorias: 500 }).then(() => cargarComidas(user!.uid)) },
-                      { text: "Cancelar", style: "cancel" },
-                    ])
+                    setComidaEditar(item)
+                    setModalVisible(true)
                   },
                 },
                 {
@@ -155,6 +153,16 @@ export default function InicioScreen() {
             </Text>
           </View>
         }
+      />
+      <ModalEditarComida
+        visible={modalVisible}
+        comida={comidaEditar}
+        userId={user?.uid || ""}
+        onClose={() => {
+          setModalVisible(false)
+          setComidaEditar(null)
+        }}
+        onSaved={() => cargarComidas(user?.uid || "")}
       />
     </View>
   )

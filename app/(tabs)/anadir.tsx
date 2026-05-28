@@ -13,13 +13,17 @@ import { useStore } from "../../src/store/useStore"
 import { auth } from "../../src/config/firebase"
 import { obtenerFechaActual } from "../../src/utils/calculos"
 import SelectorComida from "../../src/components/SelectorComida"
-import type { TipoComida } from "../../src/types"
+import ModalEditarComida from "../../src/components/ModalEditarComida"
+import type { TipoComida, Comida } from "../../src/types"
 
 export default function AnadirScreen() {
   const [tipo, setTipo] = useState<TipoComida>("desayuno")
   const [calorias, setCalorias] = useState("")
   const [guardando, setGuardando] = useState(false)
+  const [comidaEditar, setComidaEditar] = useState<Comida | null>(null)
+  const [modalVisible, setModalVisible] = useState(false)
   const anadirComida = useStore((s) => s.anadirComida)
+  const comidas = useStore((s) => s.comidas)
 
   async function handleGuardar() {
     const kcal = parseInt(calorias, 10)
@@ -28,10 +32,30 @@ export default function AnadirScreen() {
       return
     }
 
+    const fecha = obtenerFechaActual()
+    const existente = comidas.find((c) => c.tipo === tipo && c.fecha === fecha)
+    if (existente) {
+      Alert.alert(
+        "Ya existe",
+        `Ya tienes un ${tipo} registrado hoy. ¿Quieres editarlo?`,
+        [
+          { text: "Cancelar", style: "cancel" },
+          {
+            text: "Editar",
+            onPress: () => {
+              setComidaEditar(existente)
+              setModalVisible(true)
+            },
+          },
+        ]
+      )
+      return
+    }
+
     setGuardando(true)
     try {
       const user = auth.currentUser!
-      await anadirComida(user.uid, tipo, kcal, obtenerFechaActual())
+      await anadirComida(user.uid, tipo, kcal, fecha)
       setCalorias("")
       Alert.alert("✅", "Comida registrada")
     } catch {
@@ -72,6 +96,17 @@ export default function AnadirScreen() {
             {guardando ? "Guardando..." : "Guardar comida"}
           </Text>
         </Pressable>
+
+        <ModalEditarComida
+          visible={modalVisible}
+          comida={comidaEditar}
+          userId={auth.currentUser?.uid || ""}
+          onClose={() => {
+            setModalVisible(false)
+            setComidaEditar(null)
+          }}
+          onSaved={() => {}}
+        />
       </View>
     </KeyboardAvoidingView>
   )
