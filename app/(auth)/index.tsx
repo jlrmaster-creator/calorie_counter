@@ -18,6 +18,7 @@ import {
 } from "firebase/auth"
 import { auth } from "../../src/config/firebase"
 import { crearUsuario } from "../../src/db/usuarios"
+import { version } from "../../package.json"
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("")
@@ -142,6 +143,14 @@ export default function LoginScreen() {
                 : "¿No tienes cuenta? Regístrate"}
             </Text>
           </Pressable>
+
+          <View style={styles.footer}>
+            <Text style={styles.footerTexto}>
+              Created by: José López-Romero Moraleda
+            </Text>
+            <Text style={styles.footerTexto}>© 2026</Text>
+            <Text style={styles.versionTexto}>Versión: {version}</Text>
+          </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -244,5 +253,19 @@ const styles = StyleSheet.create({
     color: "#3b82f6",
     fontSize: 14,
     fontWeight: "600",
+  },
+  footer: {
+    alignItems: "center",
+    gap: 2,
+    paddingTop: 24,
+  },
+  footerTexto: {
+    fontSize: 11,
+    color: "#94a3b8",
+  },
+  versionTexto: {
+    fontSize: 11,
+    color: "#94a3b8",
+    fontFamily: "monospace",
   },
 })
