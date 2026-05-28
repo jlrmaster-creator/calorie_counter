@@ -6,7 +6,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from "react-native"
-import { collection, query, where, getDocs, orderBy } from "firebase/firestore"
+import { collection, query, where, getDocs } from "firebase/firestore"
 import { db } from "../../src/config/firebase"
 import { auth } from "../../src/config/firebase"
 import { obtenerNombreDia } from "../../src/utils/calculos"
@@ -42,11 +42,7 @@ export default function HistorialScreen() {
       fechas.push(obtenerNombreDia(fechaStr))
 
       const mealsRef = collection(db, "usuarios", user.uid, "comidas")
-      const q = query(
-        mealsRef,
-        where("fecha", "==", fechaStr),
-        orderBy("creadoEn", "asc")
-      )
+      const q = query(mealsRef, where("fecha", "==", fechaStr))
       const snapshot = await getDocs(q)
       const total = snapshot.docs.reduce((sum, doc) => {
         return sum + (doc.data().calorias as number)
