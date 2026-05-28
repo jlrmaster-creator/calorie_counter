@@ -2,7 +2,7 @@
   "name": "ContadorCalorías",
   "short_name": "Calorías",
   "description": "Controla tu ingesta calórica diaria de forma rápida y visual",
-  "start_url": "/calorie_counter/",
+  "start_url": "/calorie_counter/?source=standalone",
   "scope": "/calorie_counter/",
   "display": "standalone",
   "orientation": "portrait",
