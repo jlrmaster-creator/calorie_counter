@@ -8,7 +8,6 @@ import {
   ScrollView,
   Alert,
 } from "react-native"
-import { signOut } from "firebase/auth"
 import { useStore } from "../../src/store/useStore"
 import { auth } from "../../src/config/firebase"
 import { DIETAS } from "../../src/utils/constantes"
@@ -46,10 +45,6 @@ export default function AjustesScreen() {
         await cambiarObjetivo(user.uid, info.rangoCalorico[1])
       }
     }
-  }
-
-  function handleCerrarSesion() {
-    signOut(auth)
   }
 
   return (
@@ -126,14 +121,6 @@ export default function AjustesScreen() {
         )
       })}
 
-      <View style={styles.separador} />
-
-      <Text style={styles.email}>
-        {usuario?.email}
-      </Text>
-      <Pressable style={styles.botonCerrarSesion} onPress={handleCerrarSesion}>
-        <Text style={styles.textoCerrarSesion}>Cerrar sesión</Text>
-      </Pressable>
     </ScrollView>
   )
 }
@@ -207,27 +194,5 @@ const styles = StyleSheet.create({
     color: "#64748b",
     marginTop: 2,
   },
-  separador: {
-    height: 1,
-    backgroundColor: "#e2e8f0",
-    marginVertical: 24,
-  },
-  email: {
-    fontSize: 14,
-    color: "#64748b",
-    textAlign: "center",
-    marginBottom: 12,
-  },
-  botonCerrarSesion: {
-    padding: 14,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#ef4444",
-    alignItems: "center",
-  },
-  textoCerrarSesion: {
-    color: "#ef4444",
-    fontSize: 15,
-    fontWeight: "600",
-  },
+
 })
