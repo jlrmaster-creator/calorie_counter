@@ -61,8 +61,8 @@ export default function InicioScreen() {
 
   const rachaActual = () => {
     let r = 0
-    for (const d of historial7) {
-      if (d.dentro) r++
+    for (let i = historial7.length - 1; i >= 0; i--) {
+      if (historial7[i].dentro) r++
       else break
     }
     return r
