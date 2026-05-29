@@ -1,4 +1,4 @@
-export type TipoComida = "desayuno" | "almuerzo" | "comida" | "merienda" | "cena"
+export type TipoComida = "desayuno" | "almuerzo" | "comida" | "merienda" | "cena" | "tapas"
 
 export type EstadoDia = "dentro_objetivo" | "cercano_limite" | "exceso"
 
@@ -19,12 +19,19 @@ export interface RegistroDiario {
   estado: EstadoDia
 }
 
+export interface RegistroPeso {
+  fecha: string
+  peso: number
+}
+
 export interface Usuario {
   id: string
   email: string
   objetivoCalorias: number
   tipoDieta: TipoDieta | null
   colesterol: boolean
+  pesoActual: number | null
+  pesoHistorial: RegistroPeso[]
 }
 
 export type PremioId =

@@ -7,6 +7,7 @@ export const TIPOS_COMIDA: { id: TipoComida; nombre: string; icono: string }[] =
     { id: "comida", nombre: "Comida", icono: "🌞" },
     { id: "merienda", nombre: "Merienda", icono: "🍪" },
     { id: "cena", nombre: "Cena", icono: "🌙" },
+    { id: "tapas", nombre: "Tapas", icono: "🍤" },
   ]
 
 export const DIETAS: DietaInfo[] = [

@@ -39,7 +39,7 @@ export const PREMIOS_DEF: PremioDef[] = [
   {
     id: "variedad",
     nombre: "Variedad",
-    descripcion: "Usa los 5 tipos de comida (desayuno, almuerzo, comida, merienda, cena)",
+    descripcion: "Usa los 6 tipos de comida",
     icono: "🌈",
     estrellas: 3,
   },
@@ -138,7 +138,7 @@ export function verificarPremios(params: {
   }
 
   const tiposUsados = new Set(comidas.map((c) => c.tipo))
-  if (!premiosExistentes.includes("variedad") && tiposUsados.size >= 5) {
+  if (!premiosExistentes.includes("variedad") && tiposUsados.size >= 6) {
     nuevos.push("variedad")
   }
 

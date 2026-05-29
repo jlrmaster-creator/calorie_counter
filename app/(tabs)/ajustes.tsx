@@ -19,8 +19,12 @@ export default function AjustesScreen() {
   const cambiarObjetivo = useStore((s) => s.cambiarObjetivo)
   const cambiarDieta = useStore((s) => s.cambiarDieta)
   const cambiarColesterol = useStore((s) => s.cambiarColesterol)
+  const cambiarPeso = useStore((s) => s.cambiarPeso)
   const [objetivoInput, setObjetivoInput] = useState(
     String(usuario?.objetivoCalorias || 2000)
+  )
+  const [pesoInput, setPesoInput] = useState(
+    usuario?.pesoActual ? String(usuario.pesoActual) : ""
   )
 
   async function handleGuardarObjetivo() {
@@ -53,6 +57,18 @@ export default function AjustesScreen() {
     const user = auth.currentUser
     if (!user) return
     await cambiarColesterol(user.uid, valor)
+  }
+
+  async function handleGuardarPeso() {
+    const peso = parseFloat(pesoInput)
+    if (!peso || peso < 20 || peso > 500) {
+      Alert.alert("Error", "Introduce un peso válido entre 20 y 500 kg")
+      return
+    }
+    const user = auth.currentUser
+    if (!user) return
+    await cambiarPeso(user.uid, peso)
+    Alert.alert("✅", "Peso actualizado")
   }
 
   return (
@@ -128,6 +144,32 @@ export default function AjustesScreen() {
           </Pressable>
         )
       })}
+
+      <Text style={[styles.titulo, { marginTop: 24 }]}>
+        Peso corporal
+      </Text>
+      <TextInput
+        style={styles.input}
+        value={pesoInput}
+        onChangeText={setPesoInput}
+        keyboardType="decimal-pad"
+        placeholder="Ej: 75.5"
+        placeholderTextColor="#94a3b8"
+      />
+      <Pressable style={styles.boton} onPress={handleGuardarPeso}>
+        <Text style={styles.textoBoton}>Guardar peso</Text>
+      </Pressable>
+      {usuario?.pesoHistorial && usuario.pesoHistorial.length > 1 && (
+        <Text style={styles.pesoInfo}>
+          {(() => {
+            const ultimos = usuario.pesoHistorial.slice(-2)
+            const diff = ultimos[1].peso - ultimos[0].peso
+            if (diff < 0) return `🎉 Has perdido ${Math.abs(diff).toFixed(1)} kg desde la última vez`
+            if (diff > 0) return `⚠️ Has ganado ${diff.toFixed(1)} kg desde la última vez`
+            return "⏸️ Tu peso se mantiene"
+          })()}
+        </Text>
+      )}
 
       <Text style={[styles.titulo, { marginTop: 24 }]}>
         Colesterol
@@ -241,6 +283,13 @@ const styles = StyleSheet.create({
     color: "#64748b",
     marginTop: 4,
     fontStyle: "italic",
+  },
+  pesoInfo: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#22c55e",
+    textAlign: "center",
+    marginTop: 4,
   },
 
 })

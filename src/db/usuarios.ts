@@ -4,15 +4,23 @@ import {
   getDoc,
   updateDoc,
   serverTimestamp,
+  arrayUnion,
 } from "firebase/firestore"
 import { db } from "../config/firebase"
 import type { TipoDieta } from "../types"
+
+interface RegistroPesoData {
+  fecha: string
+  peso: number
+}
 
 interface UsuarioData {
   email: string
   objetivoCalorias: number
   tipoDieta: string | null
   colesterol: boolean
+  pesoActual: number | null
+  pesoHistorial: RegistroPesoData[]
 }
 
 export async function crearUsuario(
@@ -25,6 +33,8 @@ export async function crearUsuario(
     objetivoCalorias: 2000,
     tipoDieta: null,
     colesterol: false,
+    pesoActual: null,
+    pesoHistorial: [],
     creadoEn: serverTimestamp(),
   })
 }
@@ -59,4 +69,16 @@ export async function actualizarColesterol(
 ): Promise<void> {
   const usuarioRef = doc(db, "usuarios", userId)
   await updateDoc(usuarioRef, { colesterol })
+}
+
+export async function actualizarPeso(
+  userId: string,
+  peso: number
+): Promise<void> {
+  const usuarioRef = doc(db, "usuarios", userId)
+  const fecha = new Date().toISOString().split("T")[0]
+  await updateDoc(usuarioRef, {
+    pesoActual: peso,
+    pesoHistorial: arrayUnion({ fecha, peso }),
+  })
 }

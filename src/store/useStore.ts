@@ -7,7 +7,7 @@ import {
   agregarComida,
   eliminarComida,
 } from "../db/comidas"
-import { obtenerUsuario, actualizarObjetivo, actualizarDieta, actualizarColesterol } from "../db/usuarios"
+import { obtenerUsuario, actualizarObjetivo, actualizarDieta, actualizarColesterol, actualizarPeso } from "../db/usuarios"
 import {
   obtenerPremios,
   agregarPremio as agregarPremioDb,
@@ -34,6 +34,7 @@ interface AppState {
   cambiarObjetivo: (userId: string, objetivo: number) => Promise<void>
   cambiarDieta: (userId: string, dieta: TipoDieta | null) => Promise<void>
   cambiarColesterol: (userId: string, colesterol: boolean) => Promise<void>
+  cambiarPeso: (userId: string, peso: number) => Promise<void>
   inicializarDesdeFirebase: (userId: string) => Promise<void>
   cargarPremios: (userId: string) => Promise<void>
   limpiarNuevosPremios: () => void
@@ -97,6 +98,21 @@ export const useStore = create<AppState>((set, get) => ({
     const usuario = get().usuario
     if (usuario) {
       set({ usuario: { ...usuario, colesterol } })
+    }
+  },
+
+  cambiarPeso: async (userId, peso) => {
+    await actualizarPeso(userId, peso)
+    const usuario = get().usuario
+    if (usuario) {
+      const fecha = obtenerFechaActual()
+      set({
+        usuario: {
+          ...usuario,
+          pesoActual: peso,
+          pesoHistorial: [...(usuario.pesoHistorial || []), { fecha, peso }],
+        },
+      })
     }
   },
 
@@ -167,6 +183,8 @@ export const useStore = create<AppState>((set, get) => ({
             objetivoCalorias: data.objetivoCalorias,
             tipoDieta: data.tipoDieta as TipoDieta | null,
             colesterol: data.colesterol || false,
+            pesoActual: data.pesoActual || null,
+            pesoHistorial: data.pesoHistorial || [],
           },
         })
       }

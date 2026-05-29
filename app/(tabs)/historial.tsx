@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import {
   View,
   Text,
@@ -7,20 +7,45 @@ import {
   ActivityIndicator,
   Pressable,
   RefreshControl,
+  Dimensions,
 } from "react-native"
 import { collection, query, where, getDocs } from "firebase/firestore"
+import { LineChart } from "react-native-chart-kit"
 import { db } from "../../src/config/firebase"
 import { auth } from "../../src/config/firebase"
-import { obtenerNombreDia } from "../../src/utils/calculos"
+import { obtenerNombreDia, formatearFecha } from "../../src/utils/calculos"
 import Grafico from "../../src/components/Grafico"
 import { useStore } from "../../src/store/useStore"
 import type { Comida } from "../../src/types"
 
 export default function HistorialScreen() {
+  const usuario = useStore((s) => s.usuario)
   const [datosSemana, setDatosSemana] = useState<number[]>([])
   const [diasSemana, setDiasSemana] = useState<string[]>([])
   const [cargando, setCargando] = useState(true)
   const [refrescando, setRefrescando] = useState(false)
+
+  const pesoHistorial = useMemo(() => {
+    const h = usuario?.pesoHistorial || []
+    return h.slice(-7)
+  }, [usuario?.pesoHistorial])
+
+  const pesoLabels = useMemo(
+    () => pesoHistorial.map((r) => formatearFecha(r.fecha)),
+    [pesoHistorial]
+  )
+  const pesoData = useMemo(
+    () => pesoHistorial.map((r) => r.peso),
+    [pesoHistorial]
+  )
+
+  const tendenciaPeso = useMemo(() => {
+    if (pesoData.length < 2) return null
+    const diff = pesoData[pesoData.length - 1] - pesoData[0]
+    if (diff < 0) return { icono: "🎉", texto: `Has perdido ${Math.abs(diff).toFixed(1)} kg esta semana` }
+    if (diff > 0) return { icono: "⚠️", texto: `Has ganado ${diff.toFixed(1)} kg esta semana` }
+    return { icono: "⏸️", texto: "Tu peso se mantiene esta semana" }
+  }, [pesoData])
 
   useEffect(() => {
     cargarSemana()
@@ -118,6 +143,53 @@ export default function HistorialScreen() {
         ))}
       </View>
 
+      {pesoData.length >= 2 && (
+        <>
+          <Text style={styles.titulo}>Peso</Text>
+          {tendenciaPeso && (
+            <Text style={styles.tendencia}>
+              {tendenciaPeso.icono} {tendenciaPeso.texto}
+            </Text>
+          )}
+          <LineChart
+            data={{
+              labels: pesoLabels,
+              datasets: [{ data: pesoData }],
+            }}
+            width={Dimensions.get("window").width - 64}
+            height={200}
+            yAxisSuffix=" kg"
+            chartConfig={{
+              backgroundColor: "#fff",
+              backgroundGradientFrom: "#fff",
+              backgroundGradientTo: "#fff",
+              decimalPlaces: 1,
+              color: () => "#22c55e",
+              labelColor: () => "#6b7280",
+              propsForDots: {
+                r: "5",
+                strokeWidth: "2",
+                stroke: "#22c55e",
+              },
+              propsForBackgroundLines: {
+                strokeDasharray: "",
+                stroke: "#f3f4f6",
+              },
+            }}
+            bezier
+            style={styles.grafico}
+          />
+          <View style={styles.resumen}>
+            {pesoHistorial.map((r, i) => (
+              <View key={i} style={styles.fila}>
+                <Text style={styles.dia}>{formatearFecha(r.fecha)}</Text>
+                <Text style={styles.valor}>{r.peso} kg</Text>
+              </View>
+            ))}
+          </View>
+        </>
+      )}
+
       <Pressable style={styles.botonExportar} onPress={exportarCSV}>
         <Text style={styles.textoBoton}>Exportar CSV</Text>
       </Pressable>
@@ -176,5 +248,14 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "700",
+  },
+  tendencia: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#22c55e",
+    textAlign: "center",
+  },
+  grafico: {
+    borderRadius: 12,
   },
 })
