@@ -1,5 +1,5 @@
 import { create } from "zustand"
-import type { Comida, Usuario, TipoDieta, TipoComida, Premio, PremioId, RegistroEjercicio } from "../types"
+import type { Comida, Usuario, TipoDieta, TipoComida, Premio, PremioId, RegistroEjercicio, AlimentoEnComida } from "../types"
 import { obtenerFechaActual, calcularEstadoDia } from "../utils/calculos"
 import {
   obtenerComidasPorFecha,
@@ -34,7 +34,7 @@ interface AppState {
   anadirEjercicio: (userId: string, ejercicioId: string, nombre: string, minutos: number, calorias: number, fecha: string) => Promise<void>
   borrarEjercicio: (userId: string, ejercicioId: string) => Promise<void>
   cargarComidas: (userId: string, fecha?: string) => Promise<void>
-  anadirComida: (userId: string, tipo: TipoComida, calorias: number, fecha: string, nota?: string) => Promise<void>
+  anadirComida: (userId: string, tipo: TipoComida, calorias: number, fecha: string, nota?: string, alimentos?: AlimentoEnComida[]) => Promise<void>
   borrarComida: (userId: string, comidaId: string) => Promise<void>
   cambiarObjetivo: (userId: string, objetivo: number) => Promise<void>
   cambiarDieta: (userId: string, dieta: TipoDieta | null) => Promise<void>
@@ -67,12 +67,13 @@ export const useStore = create<AppState>((set, get) => ({
     }
   },
 
-  anadirComida: async (userId, tipo, calorias, fecha, nota) => {
+  anadirComida: async (userId, tipo, calorias, fecha, nota, alimentos) => {
     await agregarComida(userId, {
       tipo,
       calorias,
       fecha,
       nota,
+      alimentos,
     })
     await get().cargarComidas(userId, fecha)
     await get().verificarLogros(userId, fecha)

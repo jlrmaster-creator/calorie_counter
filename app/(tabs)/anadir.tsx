@@ -136,7 +136,13 @@ export default function AnadirScreen() {
 
       setGuardando(true)
       const user = auth.currentUser!
-      await anadirComida(user.uid, tipo, kcal, fecha, nota || undefined)
+      const alimentosParaGuardar = alimentosSel.map((a) => ({
+        nombre: a.nombre,
+        categoria: a.categoria,
+        calorias: Math.round((a.caloriasBase / 100) * a.gramos),
+        gramos: a.gramos,
+      }))
+      await anadirComida(user.uid, tipo, kcal, fecha, nota || undefined, alimentosParaGuardar)
       setCalorias("")
       setNota("")
       setAlimentosSel([])

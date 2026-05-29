@@ -11,6 +11,14 @@ export interface Comida {
   fecha: string
   creadoEn: number
   nota?: string
+  alimentos?: AlimentoEnComida[]
+}
+
+export interface AlimentoEnComida {
+  nombre: string
+  categoria: string
+  calorias: number
+  gramos: number
 }
 
 export interface RegistroDiario {

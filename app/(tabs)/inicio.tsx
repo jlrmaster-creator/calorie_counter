@@ -7,6 +7,7 @@ import {
   StyleSheet,
   RefreshControl,
   AppState,
+  Pressable,
 } from "react-native"
 import { useStore, calcularTotalCalorias, calcularTotalEjercicios, calcularNetoCalorias } from "../../src/store/useStore"
 import { auth } from "../../src/config/firebase"
@@ -18,6 +19,7 @@ import BarraProgreso from "../../src/components/BarraProgreso"
 import EstadoDia from "../../src/components/EstadoDia"
 import TarjetaComida from "../../src/components/TarjetaComida"
 import ModalEditarComida from "../../src/components/ModalEditarComida"
+import { generarPDF } from "../../src/utils/generarPDF"
 import type { EstadoDia as EstadoDiaTipo, Comida } from "../../src/types"
 
 function sumarDias(fecha: string, dias: number): string {
@@ -178,6 +180,15 @@ export default function InicioScreen() {
                   💪 {totalEjercicio} kcal quemadas en ejercicio
                 </Text>
               </View>
+            )}
+
+            {comidas.length > 0 && (
+              <Pressable
+                style={styles.botonDescargar}
+                onPress={() => generarPDF(fechaActiva, comidas, ejercicios, objetivo)}
+              >
+                <Text style={styles.textoBotonDescargar}>📄 Descargar informe</Text>
+              </Pressable>
             )}
 
             <EstadoDia estado={estado} />
@@ -353,5 +364,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#cbd5e1",
     textAlign: "center",
+  },
+  botonDescargar: {
+    backgroundColor: "#f0f9ff",
+    borderRadius: 10,
+    padding: 12,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#bae6fd",
+  },
+  textoBotonDescargar: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#0284c7",
   },
 })
