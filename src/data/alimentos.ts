@@ -252,6 +252,7 @@ export const ALIMENTOS: Alimento[] = [
   { categoria: "Carnes", nombre: "Ternera sesos", calorias: 125 },
   { categoria: "Carnes", nombre: "Ternera solomillo", calorias: 290 },
   { categoria: "Carnes", nombre: "Tira de asado", calorias: 401 },
+  { categoria: "Carnes", nombre: "Relleno de pollo preparado", calorias: 72 },
   { categoria: "Carnes", nombre: "Tripas", calorias: 100 },
   { categoria: "Carnes", nombre: "Vacuno hígado", calorias: 129 },
 
@@ -321,6 +322,9 @@ export const ALIMENTOS: Alimento[] = [
   { categoria: "Cereales", nombre: "Polenta", calorias: 358 },
   { categoria: "Cereales", nombre: "Sémola de trigo", calorias: 368 },
   { categoria: "Cereales", nombre: "Yuca", calorias: 338 },
+  { categoria: "Cereales", nombre: "Tortillas de maíz", calorias: 227 },
+  { categoria: "Cereales", nombre: "Tortillas de trigo", calorias: 220 },
+  { categoria: "Cereales", nombre: "Tortillas integrales", calorias: 269 },
 
   // LEGUMBRES
   { categoria: "Legumbres", nombre: "Garbanzos", calorias: 361 },
