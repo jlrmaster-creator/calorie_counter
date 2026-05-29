@@ -103,40 +103,46 @@ export default function AnadirScreen() {
   }
 
   async function handleGuardar() {
-    const kcal = parseInt(calorias, 10)
-    if (!kcal || kcal <= 0) {
-      Alert.alert("Error", "Introduce un número de calorías válido")
-      return
-    }
-
-    const existente = comidas.find((c) => c.tipo === tipo && c.fecha === fecha)
-    if (existente) {
-      Alert.alert(
-        "Ya existe",
-        `Ya tienes un ${tipo} registrado el ${formatearFecha(fecha)}. ¿Quieres editarlo?`,
-        [
-          { text: "Cancelar", style: "cancel" },
-          {
-            text: "Editar",
-            onPress: () => {
-              setComidaEditar(existente)
-              setModalEditarVisible(true)
-            },
-          },
-        ]
-      )
-      return
-    }
-
-    setGuardando(true)
     try {
+      const kcal = parseInt(calorias, 10)
+      if (!kcal || kcal <= 0) {
+        Alert.alert("Error", "Introduce un número de calorías válido")
+        return
+      }
+
+      if (!Array.isArray(comidas)) {
+        Alert.alert("Error", "Datos no disponibles, vuelve a intentarlo")
+        return
+      }
+
+      const existente = comidas.find((c) => c.tipo === tipo && c.fecha === fecha)
+      if (existente) {
+        Alert.alert(
+          "Ya existe",
+          `Ya tienes un ${tipo} registrado el ${formatearFecha(fecha)}. ¿Quieres editarlo?`,
+          [
+            { text: "Cancelar", style: "cancel" },
+            {
+              text: "Editar",
+              onPress: () => {
+                setComidaEditar(existente)
+                setModalEditarVisible(true)
+              },
+            },
+          ]
+        )
+        return
+      }
+
+      setGuardando(true)
       const user = auth.currentUser!
       await anadirComida(user.uid, tipo, kcal, fecha, nota || undefined)
       setCalorias("")
       setNota("")
       setAlimentosSel([])
       Alert.alert("✅", "Comida registrada")
-    } catch {
+    } catch (e) {
+      console.error("Error al guardar:", e)
       Alert.alert("Error", "No se pudo guardar la comida")
     } finally {
       setGuardando(false)
@@ -148,7 +154,7 @@ export default function AnadirScreen() {
       style={styles.contenedor}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <ScrollView contentContainerStyle={styles.contenido}>
+      <ScrollView contentContainerStyle={styles.contenido} keyboardShouldPersistTaps="handled">
         <Text style={styles.titulo}>¿Qué has comido?</Text>
 
         <View style={styles.dateSelector}>

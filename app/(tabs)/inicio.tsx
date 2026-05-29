@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   StyleSheet,
   RefreshControl,
+  AppState,
 } from "react-native"
 import { useStore, calcularTotalCalorias, calcularTotalEjercicios, calcularNetoCalorias } from "../../src/store/useStore"
 import { auth } from "../../src/config/firebase"
@@ -30,6 +31,7 @@ export default function InicioScreen() {
   const comidas = useStore((s) => s.comidas)
   const cargando = useStore((s) => s.cargando)
   const cargarComidas = useStore((s) => s.cargarComidas)
+  const cargarEjercicios = useStore((s) => s.cargarEjercicios)
   const inicializarDesdeFirebase = useStore((s) => s.inicializarDesdeFirebase)
   const borrarComida = useStore((s) => s.borrarComida)
   const ejercicios = useStore((s) => s.ejercicios)
@@ -42,6 +44,7 @@ export default function InicioScreen() {
 
   const user = auth.currentUser
   const fechaActiva = obtenerFechaActual()
+  const fechaCargadaRef = useRef(fechaActiva)
   const total = calcularTotalCalorias(comidas)
   const totalEjercicio = calcularTotalEjercicios(ejercicios)
   const neto = calcularNetoCalorias(comidas, ejercicios)
@@ -97,6 +100,29 @@ export default function InicioScreen() {
   useEffect(() => {
     pedirPermisoNotificaciones()
   }, [])
+
+  useEffect(() => {
+    if (!user) return
+
+    const recargarSiCambioDia = () => {
+      const hoy = obtenerFechaActual()
+      if (fechaCargadaRef.current !== hoy) {
+        fechaCargadaRef.current = hoy
+        cargarComidas(user.uid, hoy)
+        cargarEjercicios(user.uid, hoy)
+      }
+    }
+
+    const intervalo = setInterval(recargarSiCambioDia, 30000)
+    const sub = AppState.addEventListener("change", (estado) => {
+      if (estado === "active") recargarSiCambioDia()
+    })
+
+    return () => {
+      clearInterval(intervalo)
+      sub.remove()
+    }
+  }, [user])
 
   useEffect(() => {
     if (user && comidas.length >= 0) {
