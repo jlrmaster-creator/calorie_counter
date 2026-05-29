@@ -21,8 +21,11 @@ export async function agregarComida(
   comida: Omit<Comida, "id" | "creadoEn">
 ): Promise<string> {
   const ref = comidasRef(userId)
+  const datos = Object.fromEntries(
+    Object.entries(comida).filter(([_, v]) => v !== undefined)
+  )
   const docRef = await addDoc(ref, {
-    ...comida,
+    ...datos,
     creadoEn: Timestamp.now(),
   })
   return docRef.id

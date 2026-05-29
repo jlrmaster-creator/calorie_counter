@@ -11,6 +11,16 @@ service cloud.firestore {
       match /comidas/{comidaId} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
+
+      // Subcolección de ejercicios por usuario
+      match /ejercicios/{ejercicioId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // Subcolección de premios por usuario
+      match /premios/{premioId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
     }
   }
 }
