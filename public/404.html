@@ -4,9 +4,10 @@
   <meta charset="utf-8">
   <title>ContadorCalorías</title>
   <script>
-    sessionStorage.redirect = location.href;
+    var path = location.pathname.replace(/^\/calorie_counter/, "") || "/"
+    sessionStorage.setItem("redirect", path)
+    location.replace("/calorie_counter/")
   </script>
-  <meta http-equiv="refresh" content="0;URL='/calorie_counter/'">
 </head>
 <body></body>
 </html>

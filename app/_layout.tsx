@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Stack } from "expo-router"
+import { Stack, useRouter } from "expo-router"
 import { StatusBar } from "expo-status-bar"
 import { View, Pressable, Text, StyleSheet, Platform } from "react-native"
 import { onAuthStateChanged, signOut } from "firebase/auth"
@@ -13,6 +13,21 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   const [logueado, setLogueado] = useState(false)
+  const router = useRouter()
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (user) => setLogueado(!!user))
+    return unsub
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    const redirect = sessionStorage.getItem("redirect")
+    if (redirect && redirect !== "/") {
+      sessionStorage.removeItem("redirect")
+      setTimeout(() => router.replace(redirect as any), 100)
+    }
+  }, [router])
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => setLogueado(!!user))
