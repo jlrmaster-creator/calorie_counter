@@ -1,5 +1,5 @@
 import { create } from "zustand"
-import type { Comida, Usuario, TipoDieta, TipoComida, Premio, PremioId } from "../types"
+import type { Comida, Usuario, TipoDieta, TipoComida, Premio, PremioId, RegistroEjercicio } from "../types"
 import { obtenerFechaActual, calcularEstadoDia } from "../utils/calculos"
 import {
   obtenerComidasPorFecha,
@@ -13,6 +13,7 @@ import {
   agregarPremio as agregarPremioDb,
 } from "../db/premios"
 import { verificarPremios } from "../data/premios"
+import { agregarEjercicio as agregarEjercicioDb, obtenerEjerciciosPorFecha, eliminarEjercicio as eliminarEjercicioDb } from "../db/ejercicios"
 
 function sumarDias(fecha: string, dias: number): string {
   const d = new Date(fecha)
@@ -26,8 +27,12 @@ interface AppState {
   cargando: boolean
   premios: Premio[]
   nuevosPremios: Premio[]
+  ejercicios: RegistroEjercicio[]
 
   setUsuario: (usuario: Usuario | null) => void
+  cargarEjercicios: (userId: string, fecha?: string) => Promise<void>
+  anadirEjercicio: (userId: string, ejercicioId: string, nombre: string, minutos: number, calorias: number, fecha: string) => Promise<void>
+  borrarEjercicio: (userId: string, ejercicioId: string) => Promise<void>
   cargarComidas: (userId: string, fecha?: string) => Promise<void>
   anadirComida: (userId: string, tipo: TipoComida, calorias: number, fecha: string, nota?: string) => Promise<void>
   borrarComida: (userId: string, comidaId: string) => Promise<void>
@@ -47,6 +52,7 @@ export const useStore = create<AppState>((set, get) => ({
   cargando: true,
   premios: [],
   nuevosPremios: [],
+  ejercicios: [],
 
   setUsuario: (usuario) => set({ usuario }),
 
@@ -114,6 +120,33 @@ export const useStore = create<AppState>((set, get) => ({
         },
       })
     }
+  },
+
+  cargarEjercicios: async (userId, fecha) => {
+    try {
+      const fechaActiva = fecha || obtenerFechaActual()
+      const ejercicios = await obtenerEjerciciosPorFecha(userId, fechaActiva)
+      set({ ejercicios })
+    } catch (e) {
+      console.error("Error al cargar ejercicios:", e)
+      set({ ejercicios: [] })
+    }
+  },
+
+  anadirEjercicio: async (userId, ejercicioId, nombre, minutos, calorias, fecha) => {
+    await agregarEjercicioDb(userId, {
+      ejercicioId,
+      nombre,
+      minutos,
+      calorias,
+      fecha,
+    })
+    await get().cargarEjercicios(userId, fecha)
+  },
+
+  borrarEjercicio: async (userId, ejercicioId) => {
+    await eliminarEjercicioDb(userId, ejercicioId)
+    await get().cargarEjercicios(userId)
   },
 
   cargarPremios: async (userId) => {
@@ -191,6 +224,7 @@ export const useStore = create<AppState>((set, get) => ({
       await Promise.all([
         get().cargarComidas(userId),
         get().cargarPremios(userId),
+        get().cargarEjercicios(userId),
       ])
     } catch (e) {
       console.error("Error al inicializar desde Firebase:", e)
@@ -202,4 +236,12 @@ export const useStore = create<AppState>((set, get) => ({
 
 export function calcularTotalCalorias(comidas: Comida[]): number {
   return comidas.reduce((sum, c) => sum + c.calorias, 0)
+}
+
+export function calcularTotalEjercicios(ejercicios: RegistroEjercicio[]): number {
+  return ejercicios.reduce((sum, e) => sum + e.calorias, 0)
+}
+
+export function calcularNetoCalorias(comidas: Comida[], ejercicios: RegistroEjercicio[]): number {
+  return calcularTotalCalorias(comidas) - calcularTotalEjercicios(ejercicios)
 }

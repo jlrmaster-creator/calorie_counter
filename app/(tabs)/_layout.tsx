@@ -4,6 +4,7 @@ import { Text } from "react-native"
 const iconos: Record<string, string> = {
   inicio: "📊",
   anadir: "➕",
+  ejercicio: "💪",
   historial: "📅",
   premios: "🏆",
   ajustes: "⚙️",
@@ -39,6 +40,15 @@ export default function TabLayout() {
           title: "Añadir",
           tabBarIcon: () => (
             <Text style={{ fontSize: 22 }}>{iconos.anadir}</Text>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="ejercicio"
+        options={{
+          title: "Ejercicio",
+          tabBarIcon: () => (
+            <Text style={{ fontSize: 22 }}>{iconos.ejercicio}</Text>
           ),
         }}
       />

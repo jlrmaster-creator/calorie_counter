@@ -56,6 +56,23 @@ export interface PremioDef {
   estrellas: number
 }
 
+export interface EjercicioDef {
+  id: string
+  nombre: string
+  kcalPorMinuto: number
+  icono: string
+}
+
+export interface RegistroEjercicio {
+  id: string
+  ejercicioId: string
+  nombre: string
+  minutos: number
+  calorias: number
+  fecha: string
+  creadoEn: number
+}
+
 export interface DietaInfo {
   id: TipoDieta
   nombre: string

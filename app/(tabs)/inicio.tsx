@@ -7,7 +7,7 @@ import {
   StyleSheet,
   RefreshControl,
 } from "react-native"
-import { useStore, calcularTotalCalorias } from "../../src/store/useStore"
+import { useStore, calcularTotalCalorias, calcularTotalEjercicios, calcularNetoCalorias } from "../../src/store/useStore"
 import { auth } from "../../src/config/firebase"
 import { obtenerFechaActual } from "../../src/utils/calculos"
 import { calcularEstadoDia, obtenerNombreDia } from "../../src/utils/calculos"
@@ -32,6 +32,7 @@ export default function InicioScreen() {
   const cargarComidas = useStore((s) => s.cargarComidas)
   const inicializarDesdeFirebase = useStore((s) => s.inicializarDesdeFirebase)
   const borrarComida = useStore((s) => s.borrarComida)
+  const ejercicios = useStore((s) => s.ejercicios)
   const [refrescando, setRefrescando] = useState(false)
   const [comidaEditar, setComidaEditar] = useState<Comida | null>(null)
   const [modalVisible, setModalVisible] = useState(false)
@@ -42,9 +43,11 @@ export default function InicioScreen() {
   const user = auth.currentUser
   const fechaActiva = obtenerFechaActual()
   const total = calcularTotalCalorias(comidas)
+  const totalEjercicio = calcularTotalEjercicios(ejercicios)
+  const neto = calcularNetoCalorias(comidas, ejercicios)
   const objetivo = usuario?.objetivoCalorias || 2000
-  const estado = calcularEstadoDia(total, objetivo) as EstadoDiaTipo
-  const porcentaje = objetivo > 0 ? (total / objetivo) * 100 : 0
+  const estado = calcularEstadoDia(neto, objetivo) as EstadoDiaTipo
+  const porcentaje = objetivo > 0 ? (neto / objetivo) * 100 : 0
 
   const colorEstado =
     estado === "dentro_objetivo"
@@ -138,10 +141,18 @@ export default function InicioScreen() {
 
             <BarraProgreso
               porcentaje={porcentaje}
-              total={total}
+              total={neto}
               objetivo={objetivo}
               color={colorEstado}
             />
+
+            {totalEjercicio > 0 && (
+              <View style={styles.ejercicioBadge}>
+                <Text style={styles.ejercicioBadgeTexto}>
+                  💪 {totalEjercicio} kcal quemadas en ejercicio
+                </Text>
+              </View>
+            )}
 
             <EstadoDia estado={estado} />
 
@@ -234,6 +245,19 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#64748b",
     textTransform: "capitalize",
+  },
+  ejercicioBadge: {
+    backgroundColor: "#f0fdf4",
+    borderRadius: 10,
+    padding: 10,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#bbf7d0",
+  },
+  ejercicioBadgeTexto: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#16a34a",
   },
   rachaCard: {
     flexDirection: "row",
