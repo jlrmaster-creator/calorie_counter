@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import {
   View,
   Text,
@@ -12,7 +12,7 @@ import {
 } from "react-native"
 import { useStore } from "../../src/store/useStore"
 import { auth } from "../../src/config/firebase"
-import { obtenerFechaActual } from "../../src/utils/calculos"
+import { obtenerFechaActual, formatearFecha, obtenerNombreDia } from "../../src/utils/calculos"
 import SelectorComida from "../../src/components/SelectorComida"
 import ModalEditarComida from "../../src/components/ModalEditarComida"
 import ModalBuscarAlimentos from "../../src/components/ModalBuscarAlimentos"
@@ -20,6 +20,15 @@ import type { TipoComida, Comida } from "../../src/types"
 import type { Alimento } from "../../src/data/alimentos"
 import { getSalud } from "../../src/data/alimentos"
 import { PREMIOS_DEF } from "../../src/data/premios"
+
+function sumarDiasFecha(fecha: string, dias: number): string {
+  const d = new Date(fecha + "T12:00:00")
+  d.setDate(d.getDate() + dias)
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, "0")
+  const day = String(d.getDate()).padStart(2, "0")
+  return `${year}-${month}-${day}`
+}
 
 interface AlimentoSel {
   nombre: string
@@ -37,11 +46,18 @@ export default function AnadirScreen() {
   const [modalEditarVisible, setModalEditarVisible] = useState(false)
   const [modalBuscarVisible, setModalBuscarVisible] = useState(false)
   const [alimentosSel, setAlimentosSel] = useState<AlimentoSel[]>([])
+  const [fecha, setFecha] = useState(obtenerFechaActual())
   const usuario = useStore((s) => s.usuario)
+  const cargarComidas = useStore((s) => s.cargarComidas)
   const anadirComida = useStore((s) => s.anadirComida)
   const comidas = useStore((s) => s.comidas)
   const nuevosPremios = useStore((s) => s.nuevosPremios)
   const limpiarNuevosPremios = useStore((s) => s.limpiarNuevosPremios)
+
+  useEffect(() => {
+    const user = auth.currentUser
+    if (user) cargarComidas(user.uid, fecha)
+  }, [fecha])
 
   useEffect(() => {
     if (nuevosPremios.length === 0) return
@@ -93,12 +109,11 @@ export default function AnadirScreen() {
       return
     }
 
-    const fecha = obtenerFechaActual()
     const existente = comidas.find((c) => c.tipo === tipo && c.fecha === fecha)
     if (existente) {
       Alert.alert(
         "Ya existe",
-        `Ya tienes un ${tipo} registrado hoy. ¿Quieres editarlo?`,
+        `Ya tienes un ${tipo} registrado el ${formatearFecha(fecha)}. ¿Quieres editarlo?`,
         [
           { text: "Cancelar", style: "cancel" },
           {
@@ -135,6 +150,24 @@ export default function AnadirScreen() {
     >
       <ScrollView contentContainerStyle={styles.contenido}>
         <Text style={styles.titulo}>¿Qué has comido?</Text>
+
+        <View style={styles.dateSelector}>
+          <Pressable onPress={() => setFecha(sumarDiasFecha(fecha, -1))}>
+            <Text style={styles.dateArrow}>‹</Text>
+          </Pressable>
+          <Text style={styles.dateText}>
+            {obtenerNombreDia(fecha)} {formatearFecha(fecha)}
+          </Text>
+          <Pressable onPress={() => setFecha(sumarDiasFecha(fecha, 1))}>
+            <Text style={styles.dateArrow}>›</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => setFecha(obtenerFechaActual())}
+            style={styles.hoyBtn}
+          >
+            <Text style={styles.hoyText}>Hoy</Text>
+          </Pressable>
+        </View>
 
         <SelectorComida seleccionado={tipo} onSeleccionar={setTipo} />
 
@@ -267,6 +300,44 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     color: "#1e293b",
     textAlign: "center",
+  },
+  dateSelector: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+  },
+  dateArrow: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#3b82f6",
+    paddingHorizontal: 4,
+  },
+  dateText: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#1e293b",
+    minWidth: 120,
+    textAlign: "center",
+  },
+  hoyBtn: {
+    backgroundColor: "#eff6ff",
+    borderRadius: 8,
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: "#bfdbfe",
+  },
+  hoyText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#3b82f6",
   },
   input: {
     height: 60,
