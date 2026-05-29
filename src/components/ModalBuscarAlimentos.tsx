@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react"
+import { useState, useMemo } from "react"
 import {
   Modal,
   View,
@@ -7,7 +7,6 @@ import {
   FlatList,
   Pressable,
   StyleSheet,
-  Alert,
 } from "react-native"
 import { buscarAlimentos, CATEGORIAS, getSalud, getColesterolAlto } from "../data/alimentos"
 import type { Alimento, Salud } from "../data/alimentos"
@@ -89,25 +88,8 @@ export default function ModalBuscarAlimentos({
                   <Pressable
                     style={styles.alimentoItem}
                     onPress={() => {
-                      if (perjudicial) {
-                        Alert.alert(
-                          "⚠️ Alimento perjudicial",
-                          `${item.nombre} puede ser perjudicial para el colesterol alto. ¿Añadirlo de todas formas?`,
-                          [
-                            { text: "Cancelar", style: "cancel" },
-                            {
-                              text: "Añadir",
-                              onPress: () => {
-                                onSeleccionar(item)
-                                setQuery("")
-                              },
-                            },
-                          ]
-                        )
-                      } else {
-                        onSeleccionar(item)
-                        setQuery("")
-                      }
+                      onSeleccionar(item)
+                      setQuery("")
                     }}
                   >
                     <View style={styles.indicadorContainer}>
