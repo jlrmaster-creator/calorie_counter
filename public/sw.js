@@ -1,6 +1,6 @@
 self.importScripts()
 
-const CACHE = "calorias-v2"
+const CACHE = "calorias-v3"
 
 const BASE = "/calorie_counter"
 
@@ -14,7 +14,9 @@ const assets = [
 self.addEventListener("install", (event) => {
   self.skipWaiting()
   event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(assets))
+    caches.open(CACHE).then((cache) =>
+      Promise.allSettled(assets.map((url) => cache.add(url).catch(() => {})))
+    )
   )
 })
 
@@ -25,8 +27,10 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        const clone = response.clone()
-        caches.open(CACHE).then((cache) => cache.put(event.request, clone))
+        if (response.ok) {
+          const clone = response.clone()
+          caches.open(CACHE).then((cache) => cache.put(event.request, clone))
+        }
         return response
       })
       .catch(() => caches.match(event.request).then((r) => r || fetch(event.request)))
